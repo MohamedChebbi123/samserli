@@ -1,8 +1,8 @@
-from controller.user_controller import register
+from controller.user_controller import register,login
 from fastapi import APIRouter, Depends, File, UploadFile,Form
 from sqlalchemy.orm import session
 from database.connection import connect_databse
-
+from schemas.Userlogin import Userlogin
 
 router=APIRouter()
 
@@ -22,3 +22,7 @@ def register_new_user(first_name:str=Form(...),
     profile_picture,
     phone_number,
     db)
+    
+@router.post("/login_user")
+def login_user(data:Userlogin,db:session=Depends(connect_databse)):
+    return login(data,db)

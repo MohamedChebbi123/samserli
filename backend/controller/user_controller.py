@@ -1,9 +1,11 @@
 from fastapi import File, Form, UploadFile,HTTPException,status,Depends
 from models.Users import Users
 from utils.cloudinary_handler import upload_user_profile_image
-from utils.hasher import hash_password
+from utils.hasher import hash_password,verify_password
 from sqlalchemy.orm import session
 from database.connection import connect_databse
+from schemas.Userlogin import Userlogin
+from utils.jwt_handler import create_access_token
 
 def register(
     first_name:str=Form(...),
@@ -44,3 +46,23 @@ def register(
         "msg":"user added succesully",
         'userid':f"{new_user.first_name}"
     }
+    
+    
+def login(data:Userlogin,db:session=Depends(connect_databse)):
+    
+    found_user=db.query(Users).filter(Users.email==data.email).first()
+    
+    if not found_user:
+        raise HTTPException(status.HTTP_404_NOT_FOUND ,detail="email not found")
+    
+    if not verify_password(data.password,found_user.password):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,detail="wrong password")
+    
+    token=create_access_token({"sub": str(found_user.user_id)})
+    
+    
+    return{"msg":"user logged in succesfully",
+           "token":f"{token}",
+           "user-cred":f"{found_user.user_id}"
+           
+           }

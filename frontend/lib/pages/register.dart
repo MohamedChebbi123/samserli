@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:frontend/pages/login.dart';
 class Register extends StatefulWidget {
   const Register({super.key});
 
@@ -195,6 +195,17 @@ class _RegisterState extends State<Register> {
                 ),
                 child: const Text("Register"),
               ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context, // ✅ no parentheses around context
+                    MaterialPageRoute(
+                      builder: (context) => const Login(), // 👈 your target page
+                    ),
+                  );
+                },
+                child: const Text('Go to Second Page'),
+              )
             ],
           ),
         ),
