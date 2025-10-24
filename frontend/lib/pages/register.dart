@@ -43,7 +43,7 @@ class _RegisterState extends State<Register> {
     setState(() => isLoading = true);
 
     try {
-      var uri = Uri.parse("http://10.0.2.2:8000/register_new_user"); // change to your API URL
+      var uri = Uri.parse("http://10.0.2.2:8000/register_new_user");
       var request = http.MultipartRequest("POST", uri);
 
       request.fields['first_name'] = firstnameController.text.trim();

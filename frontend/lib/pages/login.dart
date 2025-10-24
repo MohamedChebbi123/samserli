@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'package:frontend/pages/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -9,6 +13,7 @@ class Login extends StatefulWidget {
 }
 
 class _RegisterState extends State<Login> {
+  final tokenstorage=const FlutterSecureStorage();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -27,10 +32,20 @@ class _RegisterState extends State<Login> {
         headers: {"Content-Type": "application/json"},
         body: '{"email": "${emailController.text.trim()}", "password": "${passwordController.text.trim()}"}',
       );
+      final data = jsonDecode(response.body);
+
 
       if (response.statusCode == 200) {
+        await tokenstorage.write(key: 'token', value: data['token']);
+        String? token = await tokenstorage.read(key: 'token');
+        print("Your secure storage token is here: $token");
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Login success")),
+        );
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const Profile()),
         );
         emailController.clear();
         passwordController.clear();
@@ -102,7 +117,7 @@ class _RegisterState extends State<Login> {
                       ? const CircularProgressIndicator(
                     color: Colors.white,
                   )
-                      : const Text("Register"),
+                      : const Text("login"),
                 ),
               ),
             ],
