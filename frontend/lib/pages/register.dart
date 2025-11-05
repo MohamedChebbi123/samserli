@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:frontend/pages/login.dart';
+
 class Register extends StatefulWidget {
   const Register({super.key});
 
@@ -81,9 +82,19 @@ class _RegisterState extends State<Register> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text("Register Page"),
+        title: const Text(
+          "Create Account",
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
         centerTitle: true,
+        backgroundColor: Colors.blue[700],
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -92,29 +103,115 @@ class _RegisterState extends State<Register> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Profile Image
-              GestureDetector(
-                onTap: pickImage,
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.grey[300],
-                  backgroundImage: _imageFile != null
-                      ? FileImage(_imageFile!)
-                      : null,
-                  child: _imageFile == null
-                      ? const Icon(Icons.camera_alt, size: 50, color: Colors.white)
-                      : null,
+              const SizedBox(height: 16),
+
+
+              const Text(
+                "SAMSERLI",
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueGrey,
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 8),
+              Text(
+                "Create your account to get started",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 32),
 
-              // First Name
+
+              Stack(
+                children: [
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.blue[300]!,
+                        width: 3,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blue.withOpacity(0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 55,
+                      backgroundColor: Colors.grey[200],
+                      backgroundImage: _imageFile != null
+                          ? FileImage(_imageFile!)
+                          : null,
+                      child: _imageFile == null
+                          ? Icon(
+                        Icons.camera_alt,
+                        size: 40,
+                        color: Colors.grey[400],
+                      )
+                          : null,
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: GestureDetector(
+                      onTap: pickImage,
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.blue[700],
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 2,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.edit,
+                          size: 18,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Tap to add profile photo",
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 32),
+
+
               TextFormField(
                 controller: firstnameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'First Name',
-                  prefixIcon: Icon(Icons.person),
-                  border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: Colors.grey[600]),
+                  prefixIcon: Icon(Icons.person_outline, color: Colors.blue[700]),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[400]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.blue[700]!, width: 2),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
                 validator: (value) =>
                 (value == null || value.trim().length < 6)
@@ -123,13 +220,23 @@ class _RegisterState extends State<Register> {
               ),
               const SizedBox(height: 16),
 
-              // Last Name
+
               TextFormField(
                 controller: lastnameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Last Name',
-                  prefixIcon: Icon(Icons.person),
-                  border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: Colors.grey[600]),
+                  prefixIcon: Icon(Icons.person_outline, color: Colors.blue[700]),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[400]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.blue[700]!, width: 2),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
                 validator: (value) =>
                 (value == null || value.trim().length < 6)
@@ -138,13 +245,23 @@ class _RegisterState extends State<Register> {
               ),
               const SizedBox(height: 16),
 
-              // Email
+
               TextFormField(
                 controller: emailController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Email',
-                  prefixIcon: Icon(Icons.email),
-                  border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: Colors.grey[600]),
+                  prefixIcon: Icon(Icons.email_outlined, color: Colors.blue[700]),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[400]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.blue[700]!, width: 2),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
                 validator: (value) {
                   if (value == null || !value.contains('@') || !value.contains('.')) {
@@ -155,14 +272,24 @@ class _RegisterState extends State<Register> {
               ),
               const SizedBox(height: 16),
 
-              // Password
+
               TextFormField(
                 controller: passwordController,
                 obscureText: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Password',
-                  prefixIcon: Icon(Icons.lock),
-                  border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: Colors.grey[600]),
+                  prefixIcon: Icon(Icons.lock_outline, color: Colors.blue[700]),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[400]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.blue[700]!, width: 2),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
                 validator: (value) => (value == null || value.isEmpty)
                     ? "Enter your password"
@@ -170,42 +297,99 @@ class _RegisterState extends State<Register> {
               ),
               const SizedBox(height: 16),
 
-              // Phone Number
+
               TextFormField(
                 controller: phoneController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Phone Number',
-                  prefixIcon: Icon(Icons.phone),
-                  border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: Colors.grey[600]),
+                  prefixIcon: Icon(Icons.phone_iphone, color: Colors.blue[700]),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[400]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.blue[700]!, width: 2),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
                 validator: (value) =>
                 (value == null || value.trim().length < 8)
                     ? "Phone number must be at least 8 digits"
                     : null,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
-              // Register Button
+
               isLoading
-                  ? const CircularProgressIndicator()
+                  ? Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.blue[700],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+              )
                   : ElevatedButton(
                 onPressed: registerUser,
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue[700],
+                  foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 2,
+                  shadowColor: Colors.blue.withOpacity(0.4),
                 ),
-                child: const Text("Register"),
+                child: const Text(
+                  "Create Account",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context, // ✅ no parentheses around context
-                    MaterialPageRoute(
-                      builder: (context) => const Login(), // 👈 your target page
+
+              const SizedBox(height: 20),
+
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Already have an account?",
+                    style: TextStyle(
+                      color: Colors.grey[600],
                     ),
-                  );
-                },
-                child: const Text('Go to Second Page'),
-              )
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const Login(),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      "Sign In",
+                      style: TextStyle(
+                        color: Colors.blue[700],
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

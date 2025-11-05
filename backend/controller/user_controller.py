@@ -91,3 +91,4 @@ def view_profile(authorization: str | None = Header(None),db:session=Depends(con
            "profile_picture":found_user.profile_picture,
            "phone_number":found_user.phone_number,
            }
+    

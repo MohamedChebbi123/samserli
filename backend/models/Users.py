@@ -1,5 +1,6 @@
-from sqlalchemy import String,Column,Integer
 from database.connection import Base
+from sqlalchemy import Column, String, Integer, DECIMAL, Text, JSON, ForeignKey
+from sqlalchemy.orm import relationship
 
 class Users(Base):
     __tablename__="users"
@@ -11,3 +12,4 @@ class Users(Base):
     password=Column(String,nullable=False)
     profile_picture=Column(String,nullable=False)
     phone_number=Column(String,nullable=False,unique=True)
+    houses = relationship("Houses", back_populates="user")
