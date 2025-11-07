@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/pages/houses/map.dart';
-import 'package:frontend/pages/register.dart';
-import 'package:frontend/pages/profile.dart';
+import 'package:frontend/pages/auth/register.dart';
+import 'package:frontend/pages/auth/profile.dart';
 
 class Navbar extends StatelessWidget {
   const Navbar({super.key});

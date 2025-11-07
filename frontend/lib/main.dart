@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/pages/login.dart';
-import 'package:frontend/pages/register.dart';
+import 'package:frontend/pages/auth/login.dart';
+import 'package:frontend/pages/auth/register.dart';
 import 'package:frontend/pages/houses/map.dart';
 void main() {
   runApp(const MyApp());

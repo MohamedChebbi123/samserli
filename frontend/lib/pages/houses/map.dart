@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui' as ui; // for resizing marker
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // for rootBundle
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:frontend/components/navabr.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -10,6 +10,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:frontend/pages/houses//housedetails.dart';
 
 class Map extends StatefulWidget {
   const Map({Key? key}) : super(key: key);
@@ -112,7 +113,6 @@ class _MapPageState extends State<Map> {
     }
   }
 
-  // Helper function to resize marker icons
   Future<BitmapDescriptor> getResizedMarker(String path, int width) async {
     final ByteData data = await rootBundle.load(path);
     final ui.Codec codec = await ui.instantiateImageCodec(
@@ -126,7 +126,6 @@ class _MapPageState extends State<Map> {
   }
 
   Future<void> gethouses() async {
-    // Resize markers to a proper size (e.g., 80px)
     BitmapDescriptor rentImage =
     await getResizedMarker('lib/assets/rent (1).png', 80);
     BitmapDescriptor saleImage =
@@ -136,7 +135,7 @@ class _MapPageState extends State<Map> {
     final uri = Uri.parse('http://10.0.2.2:8000/fetch_houses');
     final response = await http.get(uri, headers: {
       'Content-type': 'application/json',
-      'Authorization': 'Bearer $token'
+      'Authorization': 'Bearer $token',
     });
 
     if (response.statusCode == 200) {
@@ -161,10 +160,19 @@ class _MapPageState extends State<Map> {
                 title: name ?? 'Unnamed House',
                 snippet: 'Lat: $lat, Long: $long  Status: $status',
               ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Housedetails(house: house),
+                  ),
+                );
+              },
             ),
           );
         }
       }
+
       setState(() {
         _markers = newMarkers;
       });
@@ -175,103 +183,130 @@ class _MapPageState extends State<Map> {
     }
   }
 
+
   Future<void> getlocation(LatLng position) async {
     var longitude = position.longitude;
     var latitude = position.latitude;
 
+    String? selectedStatus;
+
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          title: const Text("Enter House Details"),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: "Name",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: priceController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: "Price",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: statusController,
-                  decoration: const InputDecoration(
-                    labelText: "Status",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: descriptionController,
-                  decoration: const InputDecoration(
-                    labelText: "Description",
-                    border: OutlineInputBorder(),
-                  ),
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 15),
-                ElevatedButton.icon(
-                  onPressed: _pickImages,
-                  icon: const Icon(Icons.image),
-                  label: const Text("Select Images"),
-                ),
-                const SizedBox(height: 10),
-                if (selectedImages.isNotEmpty)
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: selectedImages
-                        .map((img) => SizedBox(
-                      width: 60,
-                      height: 60,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(5),
-                        child: Image.file(
-                          File(img.path),
-                          fit: BoxFit.cover,
-                        ),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
+              title: const Text("Enter House Details"),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        labelText: "Name",
+                        border: OutlineInputBorder(),
                       ),
-                    ))
-                        .toList(),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: priceController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: "Price",
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // ✅ Dropdown instead of text field
+                    DropdownButtonFormField<String>(
+                      value: selectedStatus,
+                      decoration: const InputDecoration(
+                        labelText: "Status",
+                        border: OutlineInputBorder(),
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: "rent",
+                          child: Text("Rent"),
+                        ),
+                        DropdownMenuItem(
+                          value: "sale",
+                          child: Text("Sale"),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          selectedStatus = value!;
+                          statusController.text = value;
+                        });
+                      },
+                    ),
+
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: descriptionController,
+                      decoration: const InputDecoration(
+                        labelText: "Description",
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 15),
+                    ElevatedButton.icon(
+                      onPressed: _pickImages,
+                      icon: const Icon(Icons.image),
+                      label: const Text("Select Images"),
+                    ),
+                    const SizedBox(height: 10),
+                    if (selectedImages.isNotEmpty)
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: selectedImages
+                            .map((img) => SizedBox(
+                          width: 60,
+                          height: 60,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(5),
+                            child: Image.file(
+                              File(img.path),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ))
+                            .toList(),
+                      ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "Latitude: $latitude\nLongitude: $longitude",
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.black54),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                ElevatedButton(
+                  onPressed: () => _sendHouseData(latitude, longitude),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
-                const SizedBox(height: 10),
-                Text(
-                  "Latitude: $latitude\nLongitude: $longitude",
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.black54),
+                  child: const Text("Submit"),
                 ),
               ],
-            ),
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () => _sendHouseData(latitude, longitude),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-              ),
-              child: const Text("Submit"),
-            ),
-          ],
+            );
+          },
         );
       },
     );
   }
+
 
   Future<void> _getCurrentLocation() async {
     _currentPosition =
@@ -287,7 +322,7 @@ class _MapPageState extends State<Map> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Google Maps Example')),
+      appBar: AppBar(title: const Text('look for houses ')),
       body: GoogleMap(
         initialCameraPosition: _initialCameraPosition,
         onMapCreated: (controller) => _mapController = controller,

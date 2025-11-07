@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
-import 'package:frontend/pages/login.dart';
+import 'package:frontend/pages/auth/login.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});

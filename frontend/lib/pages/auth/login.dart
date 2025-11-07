@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:frontend/pages/profile.dart';
+import 'package:frontend/pages/auth/profile.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/pages/register.dart';
+import 'package:frontend/pages/auth/register.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
