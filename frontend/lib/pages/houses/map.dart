@@ -28,6 +28,7 @@ class _MapPageState extends State<Map> {
 
   final TextEditingController statusController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
+  int? selectedRooms;
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
 
@@ -74,6 +75,7 @@ class _MapPageState extends State<Map> {
 
       request.fields['latitude'] = latitude.toString();
       request.fields['longitude'] = longitude.toString();
+      request.fields['rooms'] = selectedRooms?.toString() ?? '0';
       request.fields['status'] = statusController.text;
       request.fields['price'] = priceController.text;
       request.fields['name'] = nameController.text;
@@ -98,6 +100,7 @@ class _MapPageState extends State<Map> {
 
         statusController.clear();
         priceController.clear();
+        selectedRooms = null;
         nameController.clear();
         descriptionController.clear();
         setState(() => selectedImages.clear());
@@ -197,36 +200,71 @@ class _MapPageState extends State<Map> {
           builder: (context, setState) {
             return AlertDialog(
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15)),
-              title: const Text("Enter House Details"),
+                  borderRadius: BorderRadius.circular(12)),
+              title: const Text(
+                "Add Property",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF222222),
+                ),
+              ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextField(
                       controller: nameController,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF222222),
+                      ),
                       decoration: const InputDecoration(
-                        labelText: "Name",
-                        border: OutlineInputBorder(),
+                        labelText: "Property Name",
+                        hintText: "Enter property name",
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 20),
                     TextField(
                       controller: priceController,
                       keyboardType: TextInputType.number,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF222222),
+                      ),
                       decoration: const InputDecoration(
                         labelText: "Price",
-                        border: OutlineInputBorder(),
+                        hintText: "Enter price",
+                        prefixText: '\$ ',
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 20),
+                    DropdownButtonFormField<int>(
+                      value: selectedRooms,
+                      decoration: const InputDecoration(
+                        labelText: "Number of Rooms",
+                        hintText: "Select rooms",
+                      ),
+                      items: List.generate(20, (index) => index + 1)
+                          .map((num) => DropdownMenuItem(
+                                value: num,
+                                child: Text(num.toString()),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedRooms = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 20),
 
-                    // ✅ Dropdown instead of text field
+                    // Status Dropdown
                     DropdownButtonFormField<String>(
                       value: selectedStatus,
                       decoration: const InputDecoration(
-                        labelText: "Status",
-                        border: OutlineInputBorder(),
+                        labelText: "Listing Type",
+                        hintText: "Select type",
                       ),
                       items: const [
                         DropdownMenuItem(
@@ -246,58 +284,120 @@ class _MapPageState extends State<Map> {
                       },
                     ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 20),
                     TextField(
                       controller: descriptionController,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF222222),
+                      ),
                       decoration: const InputDecoration(
                         labelText: "Description",
-                        border: OutlineInputBorder(),
+                        hintText: "Describe your property",
+                        alignLabelWithHint: true,
                       ),
-                      maxLines: 2,
+                      maxLines: 3,
                     ),
-                    const SizedBox(height: 15),
-                    ElevatedButton.icon(
+                    const SizedBox(height: 20),
+                    OutlinedButton.icon(
                       onPressed: _pickImages,
-                      icon: const Icon(Icons.image),
-                      label: const Text("Select Images"),
+                      icon: const Icon(Icons.add_photo_alternate_outlined),
+                      label: const Text("Add Photos"),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF222222),
+                        side: BorderSide(color: Colors.grey.shade300),
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     if (selectedImages.isNotEmpty)
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: selectedImages
-                            .map((img) => SizedBox(
-                          width: 60,
-                          height: 60,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(5),
-                            child: Image.file(
-                              File(img.path),
-                              fit: BoxFit.cover,
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "${selectedImages.length} photo(s) selected",
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF717171),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: selectedImages
+                                  .map((img) => ClipRRect(
+                                borderRadius: BorderRadius.circular(6),
+                                child: Image.file(
+                                  File(img.path),
+                                  width: 60,
+                                  height: 60,
+                                  fit: BoxFit.cover,
+                                ),
+                              ))
+                                  .toList(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on_outlined,
+                            size: 16,
+                            color: Color(0xFF717171),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              "${latitude.toStringAsFixed(6)}, ${longitude.toStringAsFixed(6)}",
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF717171),
+                              ),
                             ),
                           ),
-                        ))
-                            .toList(),
+                        ],
                       ),
-                    const SizedBox(height: 10),
-                    Text(
-                      "Latitude: $latitude\nLongitude: $longitude",
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.black54),
                     ),
                   ],
                 ),
               ),
               actions: [
-                ElevatedButton(
-                  onPressed: () => _sendHouseData(latitude, longitude),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => _sendHouseData(latitude, longitude),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF385C),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      "Add Property",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
-                  child: const Text("Submit"),
                 ),
               ],
             );
@@ -322,7 +422,19 @@ class _MapPageState extends State<Map> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('look for houses ')),
+      appBar: AppBar(
+        title: const Text(
+          'Explore Map',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF222222),
+          ),
+        ),
+        centerTitle: false,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFF222222)),
+      ),
       body: GoogleMap(
         initialCameraPosition: _initialCameraPosition,
         onMapCreated: (controller) => _mapController = controller,

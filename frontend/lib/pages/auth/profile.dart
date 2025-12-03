@@ -80,117 +80,95 @@ class _ProfileState extends State<Profile> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFF7F7F7),
       appBar: AppBar(
         title: const Text(
-          "My Profile",
+          "Profile",
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color: Color(0xFF222222),
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.blue[700],
+        backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Color(0xFF222222)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
             // Profile Header
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
               ),
               child: Column(
                 children: [
                   // Profile Picture
-                  Stack(
-                    children: [
-                      Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.blue[300]!,
-                            width: 3,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.blue.withOpacity(0.2),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: CircleAvatar(
-                          radius: 55,
-                          backgroundColor: Colors.grey[200],
-                          backgroundImage: NetworkImage(
-                            userData!['profile_picture'] ?? "https://via.placeholder.com/150",
-                          ),
-                          child: userData!['profile_picture'] == null
-                              ? Icon(
-                            Icons.person,
-                            size: 40,
-                            color: Colors.grey[400],
-                          )
-                              : null,
-                        ),
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.grey.shade300,
+                        width: 2,
                       ),
-                    ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 48,
+                      backgroundColor: Colors.grey[200],
+                      backgroundImage: NetworkImage(
+                        userData!['profile_picture'] ?? "https://via.placeholder.com/150",
+                      ),
+                      child: userData!['profile_picture'] == null
+                          ? Icon(
+                        Icons.person_outline,
+                        size: 40,
+                        color: Colors.grey[400],
+                      )
+                          : null,
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
                   // User Name
                   Text(
                     "${userData!['first_name']} ${userData!['last_name']}",
                     style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blueGrey,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF222222),
+                      letterSpacing: -0.5,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
 
                   // Email
                   Text(
                     userData!['email'],
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF717171),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
 
             // Profile Details Card
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
               ),
               child: Column(
                 children: [
@@ -226,24 +204,23 @@ class _ProfileState extends State<Profile> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // Edit Profile Button
             SizedBox(
               width: double.infinity,
+              height: 56,
               child: ElevatedButton(
                 onPressed: () {
                   // Add edit profile functionality here
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue[700],
+                  backgroundColor: const Color(0xFFFF385C),
                   foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 50),
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  elevation: 2,
-                  shadowColor: Colors.blue.withOpacity(0.4),
                 ),
                 child: const Text(
                   "Edit Profile",
@@ -279,23 +256,23 @@ class _ProfileState extends State<Profile> {
       child: ListTile(
         leading: Icon(
           icon,
-          color: Colors.blue[700],
-          size: 24,
+          color: const Color(0xFF717171),
+          size: 22,
         ),
         title: Text(
           title,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[600],
-            fontWeight: FontWeight.w500,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Color(0xFF717171),
+            fontWeight: FontWeight.w400,
           ),
         ),
         subtitle: Text(
           value,
           style: const TextStyle(
             fontSize: 16,
-            color: Colors.blueGrey,
-            fontWeight: FontWeight.w600,
+            color: Color(0xFF222222),
+            fontWeight: FontWeight.w500,
           ),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),

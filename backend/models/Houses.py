@@ -7,6 +7,7 @@ class Houses(Base):
     house_id = Column(Integer, primary_key=True, index=True)
     latitude = Column(DECIMAL, nullable=False)
     longitude = Column(DECIMAL, nullable=False)
+    rooms=Column(Integer,nullable=False)
     status=Column(String,nullable=False)
     price=Column(DECIMAL,nullable=False)
     name = Column(String, nullable=False)
