@@ -26,6 +26,7 @@ class _NavbarState extends State<Navbar> {
     _notificationService.fetchUnreadCount();
   }
 
+
   @override
   void dispose() {
     _notificationService.removeListener(_onNotificationUpdate);

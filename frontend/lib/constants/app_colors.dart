@@ -32,6 +32,8 @@ class AppColors {
   static const Color border = Color(0xFFE0E0E0);
   static const Color borderLight = Color(0xFFF0F0F0);
   
+
+
   static Color shadow = Colors.black.withOpacity(0.05);
   static Color shadowMedium = Colors.black.withOpacity(0.1);
   static Color shadowDark = Colors.black.withOpacity(0.15);
@@ -44,6 +46,8 @@ class AppColors {
   
   static Color surfaceWithOpacity(double opacity) =>
       surface.withOpacity(opacity);
+  
+
   
   static const LinearGradient primaryGradient = LinearGradient(
     colors: [primaryLight, primary],
