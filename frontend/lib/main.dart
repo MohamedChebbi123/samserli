@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/pages/auth/login.dart';
+import 'package:frontend/pages/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,13 +15,13 @@ class MyApp extends StatelessWidget {
       title: 'RealEstate',
       theme: ThemeData(
         useMaterial3: true,
-        primarySwatch: Colors.pink,
-        primaryColor: const Color(0xFFFF385C),
+        primarySwatch: Colors.blue,
+        primaryColor: const Color(0xFF2E7FD8),
         scaffoldBackgroundColor: const Color(0xFFF7F7F7),
         
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFFF385C),
-          primary: const Color(0xFFFF385C),
+          seedColor: const Color(0xFF2E7FD8),
+          primary: const Color(0xFF2E7FD8),
           secondary: const Color(0xFF00A699),
           surface: Colors.white,
           background: const Color(0xFFF7F7F7),
@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
         
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFFF385C),
+            backgroundColor: const Color(0xFF2E7FD8),
             foregroundColor: Colors.white,
             elevation: 0,
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
@@ -121,13 +121,13 @@ class MyApp extends StatelessWidget {
             fontSize: 14,
             fontWeight: FontWeight.w400,
             color: Color(0xFF717171),
-            height: 1.4,
           ),
         ),
       ),
-      home: const Login(),
+      home: const SplashScreen(),
     );
   }
-}
+} 
+
 
 

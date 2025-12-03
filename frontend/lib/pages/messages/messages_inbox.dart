@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:frontend/pages/houses/message_user.dart';
+import 'package:frontend/services/notification_service.dart';
 
 class MessagesInbox extends StatefulWidget {
   const MessagesInbox({Key? key}) : super(key: key);
@@ -13,6 +14,7 @@ class MessagesInbox extends StatefulWidget {
 
 class _MessagesInboxState extends State<MessagesInbox> {
   final tokenstorage = const FlutterSecureStorage();
+  final NotificationService _notificationService = NotificationService();
   
   List<dynamic> conversations = [];
   bool isLoading = true;
@@ -70,7 +72,9 @@ class _MessagesInboxState extends State<MessagesInbox> {
     }
   }
 
-  void openConversation(int userId, String userName, String userImage) {
+  void openConversation(int userId, String userName, String userImage) async {
+    await _notificationService.markConversationAsRead(userId);
+    
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -81,12 +85,121 @@ class _MessagesInboxState extends State<MessagesInbox> {
         ),
       ),
     ).then((_) {
-      // Refresh conversations when returning from chat
       fetchConversations();
     });
   }
 
-  void showConversationOptions(int userId, String userName, String userImage) {
+  Future<void> blockUser(int userId, String userName) async {
+    try {
+      String? token = await tokenstorage.read(key: 'token');
+      if (token == null) return;
+
+      final uri = Uri.parse("http://10.0.2.2:8000/block_user/$userId");
+      final response = await http.post(
+        uri,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("$userName has been blocked"),
+            backgroundColor: Colors.green,
+          ),
+        );
+        fetchConversations();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Failed to block user"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> unblockUser(int userId, String userName) async {
+    try {
+      String? token = await tokenstorage.read(key: 'token');
+      if (token == null) return;
+
+      final uri = Uri.parse("http://10.0.2.2:8000/unblock_user/$userId");
+      final response = await http.delete(
+        uri,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("$userName has been unblocked"),
+            backgroundColor: Colors.green,
+          ),
+        );
+        fetchConversations();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Failed to unblock user"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<Map<String, bool>> checkBlockStatus(int userId) async {
+    try {
+      String? token = await tokenstorage.read(key: 'token');
+      if (token == null) return {"i_blocked_them": false, "they_blocked_me": false};
+
+      final uri = Uri.parse("http://10.0.2.2:8000/check_block_status/$userId");
+      final response = await http.get(
+        uri,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          "i_blocked_them": data['i_blocked_them'] ?? false,
+          "they_blocked_me": data['they_blocked_me'] ?? false,
+        };
+      }
+    } catch (e) {
+      print("Error checking block status: $e");
+    }
+    return {"i_blocked_them": false, "they_blocked_me": false};
+  }
+
+  void showConversationOptions(int userId, String userName, String userImage) async {
+    final blockStatus = await checkBlockStatus(userId);
+    final iBlocked = blockStatus['i_blocked_them'] ?? false;
+    
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -126,6 +239,46 @@ class _MessagesInboxState extends State<MessagesInbox> {
               ),
               const Divider(),
               ListTile(
+                leading: Icon(
+                  iBlocked ? Icons.block : Icons.block_outlined,
+                  color: Colors.red,
+                ),
+                title: Text(iBlocked ? "Unblock User" : "Block User"),
+                subtitle: Text(
+                  iBlocked 
+                    ? "Allow $userName to message you"
+                    : "Stop receiving messages from $userName"
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  if (iBlocked) {
+                    unblockUser(userId, userName);
+                  } else {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text("Block User"),
+                        content: Text("Are you sure you want to block $userName? You won't receive messages from them."),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("Cancel"),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              blockUser(userId, userName);
+                            },
+                            child: const Text("Block", style: TextStyle(color: Colors.red)),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
+              ),
+              const Divider(),
+              ListTile(
                 leading: const Icon(Icons.info_outline, color: Color(0xFF222222)),
                 title: const Text("About Messages"),
                 subtitle: const Text("Long-press your messages in chat to edit or delete"),
@@ -141,9 +294,8 @@ class _MessagesInboxState extends State<MessagesInbox> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
           'Messages',
@@ -189,7 +341,7 @@ class _MessagesInboxState extends State<MessagesInbox> {
                           icon: const Icon(Icons.refresh),
                           label: const Text("Retry"),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFF385C),
+                            backgroundColor: const Color(0xFF2E7FD8),
                           ),
                         ),
                       ],
@@ -229,7 +381,7 @@ class _MessagesInboxState extends State<MessagesInbox> {
                     )
                   : RefreshIndicator(
                       onRefresh: fetchConversations,
-                      color: const Color(0xFFFF385C),
+                      color: const Color(0xFF2E7FD8),
                       child: ListView.builder(
                         itemCount: conversations.length,
                         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -241,6 +393,7 @@ class _MessagesInboxState extends State<MessagesInbox> {
                           final lastMessage = conversation['last_message'] ?? '';
                           final lastMessageTime = conversation['last_message_time'] ?? '';
                           final isLastMessageMine = conversation['is_last_message_mine'] ?? false;
+                          final unreadCount = conversation['unread_count'] ?? 0;
 
                           return Container(
                             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -263,20 +416,52 @@ class _MessagesInboxState extends State<MessagesInbox> {
                                 padding: const EdgeInsets.all(16),
                                 child: Row(
                                   children: [
-                                    // User Avatar
-                                    CircleAvatar(
-                                      radius: 28,
-                                      backgroundColor: Colors.grey[300],
-                                      backgroundImage: userImage.isNotEmpty
-                                          ? NetworkImage(userImage)
-                                          : null,
-                                      child: userImage.isEmpty
-                                          ? const Icon(Icons.person, size: 28, color: Colors.grey)
-                                          : null,
+                                    Stack(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 28,
+                                          backgroundColor: Colors.grey[300],
+                                          backgroundImage: userImage.isNotEmpty
+                                              ? NetworkImage(userImage)
+                                              : null,
+                                          child: userImage.isEmpty
+                                              ? const Icon(Icons.person, size: 28, color: Colors.grey)
+                                              : null,
+                                        ),
+                                        if (unreadCount > 0)
+                                          Positioned(
+                                            right: 0,
+                                            top: 0,
+                                            child: Container(
+                                              padding: const EdgeInsets.all(4),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF2E7FD8),
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color: Colors.white,
+                                                  width: 2,
+                                                ),
+                                              ),
+                                              constraints: const BoxConstraints(
+                                                minWidth: 20,
+                                                minHeight: 20,
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  unreadCount > 9 ? '9+' : unreadCount.toString(),
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
                                     ),
-                                    const SizedBox(width: 16),
+                                    const SizedBox(width: 12),
                                     
-                                    // Message Info
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,

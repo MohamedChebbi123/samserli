@@ -82,7 +82,7 @@ class _RegisterState extends State<Register> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -92,82 +92,105 @@ class _RegisterState extends State<Register> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
 
               const Text(
                 "Create account",
                 style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF222222),
-                  letterSpacing: -0.5,
+                  fontSize: 36,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF1A1A1A),
+                  letterSpacing: -1.0,
+                  height: 1.2,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               const Text(
                 "Start your property journey today",
                 style: TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF717171),
+                  fontSize: 17,
+                  color: Color(0xFF6B6B6B),
                   fontWeight: FontWeight.w400,
+                  height: 1.4,
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 36),
 
 
               Center(
                 child: Stack(
                   children: [
                     Container(
-                      width: 100,
-                      height: 100,
+                      width: 110,
+                      height: 110,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.grey[300]!,
-                          width: 2,
-                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
                       ),
-                      child: CircleAvatar(
-                        radius: 48,
-                        backgroundColor: Colors.grey[100],
-                        backgroundImage: _imageFile != null
-                            ? FileImage(_imageFile!)
-                            : null,
-                        child: _imageFile == null
-                            ? Icon(
-                          Icons.person_outline,
-                          size: 40,
-                          color: Colors.grey[400],
-                        )
-                            : null,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.grey[200]!,
+                            width: 3,
+                          ),
+                        ),
+                        child: CircleAvatar(
+                          radius: 52,
+                          backgroundColor: const Color(0xFFF5F5F5),
+                          backgroundImage: _imageFile != null
+                              ? FileImage(_imageFile!)
+                              : null,
+                          child: _imageFile == null
+                              ? Icon(
+                                  Icons.person_outline,
+                                  size: 48,
+                                  color: Colors.grey[400],
+                                )
+                              : null,
+                        ),
                       ),
                     ),
                     Positioned(
-                      bottom: 0,
-                      right: 0,
+                      bottom: 2,
+                      right: 2,
                       child: GestureDetector(
                         onTap: pickImage,
                         child: Container(
-                          width: 32,
-                          height: 32,
+                          width: 38,
+                          height: 38,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: const Color(0xFFFF385C),
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF1E5FB8), Color(0xFF2E7FD8)],
+                            ),
                             border: Border.all(
                               color: Colors.white,
-                              width: 2,
+                              width: 3,
                             ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF2E7FD8).withOpacity(0.4),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
                           child: const Icon(
                             Icons.camera_alt,
-                            size: 16,
+                            size: 18,
                             color: Colors.white,
                           ),
                         ),
@@ -176,168 +199,371 @@ class _RegisterState extends State<Register> {
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               const Center(
                 child: Text(
                   "Add profile photo",
                   style: TextStyle(
-                    color: Color(0xFF717171),
-                    fontSize: 12,
+                    color: Color(0xFF6B6B6B),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 36),
 
 
-              TextFormField(
-                controller: firstnameController,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF222222),
+              Container(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                decoration: const InputDecoration(
-                  labelText: 'First Name',
-                  hintText: 'Enter your first name',
-                  labelStyle: TextStyle(
-                    color: Color(0xFF717171),
-                    fontSize: 14,
+                child: TextFormField(
+                  controller: firstnameController,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF1A1A1A),
+                    fontWeight: FontWeight.w500,
                   ),
-                ),
-                validator: (value) =>
-                (value == null || value.trim().length < 6)
-                    ? "First name must be at least 6 characters"
-                    : null,
-              ),
-              const SizedBox(height: 20),
-
-              TextFormField(
-                controller: lastnameController,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF222222),
-                ),
-                decoration: const InputDecoration(
-                  labelText: 'Last Name',
-                  hintText: 'Enter your last name',
-                  labelStyle: TextStyle(
-                    color: Color(0xFF717171),
-                    fontSize: 14,
+                  decoration: InputDecoration(
+                    labelText: 'First Name',
+                    hintText: 'Enter your first name',
+                    hintStyle: TextStyle(
+                      color: Colors.grey.withOpacity(0.5),
+                    ),
+                    labelStyle: const TextStyle(
+                      color: Color(0xFF6B6B6B),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF2E7FD8), width: 2),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFEF4444)),
+                    ),
                   ),
+                  validator: (value) =>
+                  (value == null || value.trim().length < 6)
+                      ? "First name must be at least 6 characters"
+                      : null,
                 ),
-                validator: (value) =>
-                (value == null || value.trim().length < 6)
-                    ? "Last name must be at least 6 characters"
-                    : null,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
-              TextFormField(
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF222222),
+              Container(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  hintText: 'Enter your email',
-                  labelStyle: TextStyle(
-                    color: Color(0xFF717171),
-                    fontSize: 14,
+                child: TextFormField(
+                  controller: lastnameController,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF1A1A1A),
+                    fontWeight: FontWeight.w500,
                   ),
-                ),
-                validator: (value) {
-                  if (value == null || !value.contains('@') || !value.contains('.')) {
-                    return "Enter a valid email";
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-
-              TextFormField(
-                controller: passwordController,
-                obscureText: true,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF222222),
-                ),
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  hintText: 'Create a password',
-                  labelStyle: TextStyle(
-                    color: Color(0xFF717171),
-                    fontSize: 14,
+                  decoration: InputDecoration(
+                    labelText: 'Last Name',
+                    hintText: 'Enter your last name',
+                    hintStyle: TextStyle(
+                      color: Colors.grey.withOpacity(0.5),
+                    ),
+                    labelStyle: const TextStyle(
+                      color: Color(0xFF6B6B6B),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF2E7FD8), width: 2),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFEF4444)),
+                    ),
                   ),
+                  validator: (value) =>
+                  (value == null || value.trim().length < 6)
+                      ? "Last name must be at least 6 characters"
+                      : null,
                 ),
-                validator: (value) => (value == null || value.isEmpty)
-                    ? "Enter your password"
-                    : null,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
-              TextFormField(
-                controller: phoneController,
-                keyboardType: TextInputType.phone,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF222222),
+              Container(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                decoration: const InputDecoration(
-                  labelText: 'Phone Number',
-                  hintText: 'Enter your phone number',
-                  labelStyle: TextStyle(
-                    color: Color(0xFF717171),
-                    fontSize: 14,
+                child: TextFormField(
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF1A1A1A),
+                    fontWeight: FontWeight.w500,
                   ),
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    hintText: 'Enter your email',
+                    hintStyle: TextStyle(
+                      color: Colors.grey.withOpacity(0.5),
+                    ),
+                    labelStyle: const TextStyle(
+                      color: Color(0xFF6B6B6B),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF2E7FD8), width: 2),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFEF4444)),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || !value.contains('@') || !value.contains('.')) {
+                      return "Enter a valid email";
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) =>
-                (value == null || value.trim().length < 8)
-                    ? "Phone number must be at least 8 digits"
-                    : null,
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
+
+              Container(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: TextFormField(
+                  controller: passwordController,
+                  obscureText: true,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF1A1A1A),
+                    fontWeight: FontWeight.w500,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    hintText: 'Create a password',
+                    hintStyle: TextStyle(
+                      color: Colors.grey.withOpacity(0.5),
+                    ),
+                    labelStyle: const TextStyle(
+                      color: Color(0xFF6B6B6B),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF2E7FD8), width: 2),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFEF4444)),
+                    ),
+                  ),
+                  validator: (value) => (value == null || value.isEmpty)
+                      ? "Enter your password"
+                      : null,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              Container(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: TextFormField(
+                  controller: phoneController,
+                  keyboardType: TextInputType.phone,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF1A1A1A),
+                    fontWeight: FontWeight.w500,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Phone Number',
+                    hintText: 'Enter your phone number',
+                    hintStyle: TextStyle(
+                      color: Colors.grey.withOpacity(0.5),
+                    ),
+                    labelStyle: const TextStyle(
+                      color: Color(0xFF6B6B6B),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF2E7FD8), width: 2),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFEF4444)),
+                    ),
+                  ),
+                  validator: (value) =>
+                  (value == null || value.trim().length < 8)
+                      ? "Phone number must be at least 8 digits"
+                      : null,
+                ),
+              ),
+              const SizedBox(height: 36),
 
 
-              SizedBox(
+              Container(
                 width: double.infinity,
-                height: 56,
+                height: 58,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF2E7FD8).withOpacity(0.3),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
                 child: isLoading
                     ? Container(
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFE61E4D), Color(0xFFFF385C)],
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      strokeWidth: 2,
-                    ),
-                  ),
-                )
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF1E5FB8), Color(0xFF2E7FD8)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            strokeWidth: 2.5,
+                          ),
+                        ),
+                      )
                     : ElevatedButton(
-                  onPressed: registerUser,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF385C),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    "Create Account",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+                        onPressed: registerUser,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2E7FD8),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          padding: EdgeInsets.zero,
+                        ),
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF1E5FB8), Color(0xFF2E7FD8)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Container(
+                            alignment: Alignment.center,
+                            child: const Text(
+                              "Create Account",
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
 
               Center(

@@ -4,6 +4,8 @@ from models import Users
 from models import Houses
 from models import Message
 from models import Favourites
+from models import BlockedUsers
+from models import PasswordReset
 from database.connection import engine, Base
 from routes import userroute
 from routes import houseroute

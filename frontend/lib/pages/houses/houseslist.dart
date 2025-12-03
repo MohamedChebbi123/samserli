@@ -18,14 +18,12 @@ class _HousesListState extends State<HousesList> {
   bool isLoading = true;
   String? errorMessage;
 
-  String selectedFilter = "all"; // NEW: all, rent, sale
-  
-  // Price range filters
+  String selectedFilter = "all";
+
   double minPrice = 0;
   double maxPrice = 1000000;
-  
-  // Room number filters
-  int? selectedRooms; // null means all
+
+  int? selectedRooms;
 
   @override
   void initState() {
@@ -237,10 +235,8 @@ class _HousesListState extends State<HousesList> {
 
   @override
   Widget build(BuildContext context) {
-    // 🔥 Apply filters
     var filteredHouses = houses;
 
-    // Filter by status (rent/sale)
     if (selectedFilter != "all") {
       filteredHouses = filteredHouses.where((h) {
         final status = (h['status'] ?? '').toString().toLowerCase();
@@ -253,13 +249,11 @@ class _HousesListState extends State<HousesList> {
       }).toList();
     }
 
-    // Filter by price range
     filteredHouses = filteredHouses.where((h) {
       final price = (h['price'] ?? 0).toDouble();
       return price >= minPrice && price <= maxPrice;
     }).toList();
 
-    // Filter by number of rooms
     if (selectedRooms != null) {
       filteredHouses = filteredHouses.where((h) {
         final rooms = h['rooms'] ?? 0;
@@ -271,13 +265,15 @@ class _HousesListState extends State<HousesList> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           "Explore Properties",
           style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF222222),
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1A1A1A),
+            letterSpacing: -0.5,
           ),
         ),
         centerTitle: false,
@@ -285,157 +281,182 @@ class _HousesListState extends State<HousesList> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Color(0xFF222222)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.tune, color: Color(0xFF222222)),
-            onPressed: showFilterDialog,
+          Container(
+            margin: const EdgeInsets.only(right: 4),
+            child: IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2E7FD8).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.tune_rounded,
+                  color: Color(0xFF2E7FD8),
+                  size: 20,
+                ),
+              ),
+              onPressed: showFilterDialog,
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Color(0xFF222222)),
-            onPressed: fetchHouses,
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            child: IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2E7FD8).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.refresh,
+                  color: Color(0xFF2E7FD8),
+                  size: 20,
+                ),
+              ),
+              onPressed: fetchHouses,
+            ),
           ),
         ],
       ),
 
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2E7FD8)),
+                strokeWidth: 3,
+              ),
+            )
           : errorMessage != null
           ? Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error_outline,
-                size: 60,
-                color: Colors.red[300],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                errorMessage!,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[700],
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: fetchHouses,
-                icon: const Icon(Icons.refresh),
-                label: const Text("Retry"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue[700],
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
-      )
-          : Column(
-        children: [
-          const SizedBox(height: 12),
-
-          // Filter Buttons
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                _buildFilterButton("All", "all"),
-                const SizedBox(width: 8),
-                _buildFilterButton("For Rent", "rent"),
-                const SizedBox(width: 8),
-                _buildFilterButton("For Sale", "sale"),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Active filters indicator
-          if (minPrice > 0 || maxPrice < 1000000 || selectedRooms != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  if (minPrice > 0 || maxPrice < 1000000)
-                    Chip(
-                      label: Text(
-                        "Price: \$${minPrice.toStringAsFixed(0)} - \$${maxPrice.toStringAsFixed(0)}",
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      deleteIcon: const Icon(Icons.close, size: 16),
-                      onDeleted: () {
-                        setState(() {
-                          minPrice = 0;
-                          maxPrice = 1000000;
-                        });
-                      },
-                    ),
-                  if (selectedRooms != null)
-                    Chip(
-                      label: Text(
-                        selectedRooms == 6 ? "6+ Rooms" : "$selectedRooms Room${selectedRooms! > 1 ? 's' : ''}",
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      deleteIcon: const Icon(Icons.close, size: 16),
-                      onDeleted: () {
-                        setState(() {
-                          selectedRooms = null;
-                        });
-                      },
-                    ),
-                ],
-              ),
-            ),
-          if (minPrice > 0 || maxPrice < 1000000 || selectedRooms != null)
-            const SizedBox(height: 12),
-
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: fetchHouses,
-              child: filteredHouses.isEmpty
-                  ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.search_off,
-                      size: 60,
-                      color: Colors.grey[400],
-                    ),
+                    Icon(Icons.error_outline, size: 60, color: Colors.red[300]),
                     const SizedBox(height: 16),
                     Text(
-                      "No properties match your filters",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
+                      errorMessage!,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: fetchHouses,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text("Retry"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue[700],
+                        foregroundColor: Colors.white,
                       ),
                     ),
                   ],
                 ),
-              )
-                  : ListView.builder(
-                padding: const EdgeInsets.all(16.0),
-                itemCount: filteredHouses.length,
-                itemBuilder: (context, index) {
-                  final house = filteredHouses[index];
-                  return HouseCard(house: house);
-                },
               ),
+            )
+          : Column(
+              children: [
+                const SizedBox(height: 12),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      _buildFilterButton("All", "all"),
+                      const SizedBox(width: 8),
+                      _buildFilterButton("For Rent", "rent"),
+                      const SizedBox(width: 8),
+                      _buildFilterButton("For Sale", "sale"),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                if (minPrice > 0 || maxPrice < 1000000 || selectedRooms != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        if (minPrice > 0 || maxPrice < 1000000)
+                          Chip(
+                            label: Text(
+                              "Price: \$${minPrice.toStringAsFixed(0)} - \$${maxPrice.toStringAsFixed(0)}",
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                            deleteIcon: const Icon(Icons.close, size: 16),
+                            onDeleted: () {
+                              setState(() {
+                                minPrice = 0;
+                                maxPrice = 1000000;
+                              });
+                            },
+                          ),
+                        if (selectedRooms != null)
+                          Chip(
+                            label: Text(
+                              selectedRooms == 6
+                                  ? "6+ Rooms"
+                                  : "$selectedRooms Room${selectedRooms! > 1 ? 's' : ''}",
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                            deleteIcon: const Icon(Icons.close, size: 16),
+                            onDeleted: () {
+                              setState(() {
+                                selectedRooms = null;
+                              });
+                            },
+                          ),
+                      ],
+                    ),
+                  ),
+                if (minPrice > 0 || maxPrice < 1000000 || selectedRooms != null)
+                  const SizedBox(height: 12),
+
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: fetchHouses,
+                    child: filteredHouses.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.search_off,
+                                  size: 60,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  "No properties match your filters",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(16.0),
+                            itemCount: filteredHouses.length,
+                            itemBuilder: (context, index) {
+                              final house = filteredHouses[index];
+                              return HouseCard(house: house);
+                            },
+                          ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
 
       bottomNavigationBar: const Navbar(),
     );
   }
 
-  // Filter Button Widget
   Widget _buildFilterButton(String label, String value) {
     final isSelected = selectedFilter == value;
 
@@ -446,23 +467,45 @@ class _HousesListState extends State<HousesList> {
             selectedFilter = value;
           });
         },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF222222) : Colors.white,
-            borderRadius: BorderRadius.circular(8),
+            gradient: isSelected
+                ? const LinearGradient(
+                    colors: [Color(0xFF5BA3E8), Color(0xFF2E7FD8)],
+                  )
+                : null,
+            color: isSelected ? null : Colors.white,
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isSelected ? const Color(0xFF222222) : Colors.grey.shade300,
+              color: isSelected ? Colors.transparent : Colors.grey.shade300,
               width: 1.5,
             ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF2E7FD8).withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: Text(
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: isSelected ? Colors.white : const Color(0xFF222222),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+              color: isSelected ? Colors.white : const Color(0xFF717171),
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.3,
             ),
           ),
         ),
@@ -531,9 +574,7 @@ class _HouseCardState extends State<HouseCard> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                isFavourite
-                    ? "Added to favourites"
-                    : "Removed from favourites",
+                isFavourite ? "Added to favourites" : "Removed from favourites",
               ),
               backgroundColor: Colors.green,
               behavior: SnackBarBehavior.floating,
@@ -564,12 +605,10 @@ class _HouseCardState extends State<HouseCard> {
 
   @override
   Widget build(BuildContext context) {
-    // Parse images - handle both JSON string and list
     List<String> images = [];
     final housePicture = widget.house['house_picture'];
     if (housePicture != null) {
       if (housePicture is String) {
-        // If it's a JSON string, decode it
         try {
           final decoded = jsonDecode(housePicture);
           images = List<String>.from(decoded);
@@ -578,15 +617,13 @@ class _HouseCardState extends State<HouseCard> {
           images = [];
         }
       } else if (housePicture is List) {
-        // If it's already a list, use it directly
         images = List<String>.from(housePicture);
       }
     }
     final firstImage = images.isNotEmpty ? images[0] : null;
 
     final status = (widget.house['status'] ?? 'N/A').toString().toLowerCase();
-    
-    // Owner information
+
     final owner = widget.house['owner'] as Map<String, dynamic>?;
     final ownerName = owner?['full_name'] ?? 'Unknown Owner';
     final ownerProfilePicture = owner?['profile_picture'] ?? '';
@@ -605,27 +642,26 @@ class _HouseCardState extends State<HouseCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // House Image
             Stack(
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: firstImage != null
                       ? Image.network(
-                    firstImage,
-                    height: 280,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  )
+                          firstImage,
+                          height: 280,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        )
                       : Container(
-                    height: 280,
-                    color: Colors.grey[300],
-                    child: Icon(
-                      Icons.home_outlined,
-                      size: 60,
-                      color: Colors.grey[500],
-                    ),
-                  ),
+                          height: 280,
+                          color: Colors.grey[300],
+                          child: Icon(
+                            Icons.home_outlined,
+                            size: 60,
+                            color: Colors.grey[500],
+                          ),
+                        ),
                 ),
                 Positioned(
                   top: 12,
@@ -645,15 +681,17 @@ class _HouseCardState extends State<HouseCard> {
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  Color(0xFFFF385C),
+                                  Color(0xFF2E7FD8),
                                 ),
                               ),
                             )
                           : Icon(
-                              isFavourite ? Icons.favorite : Icons.favorite_border,
+                              isFavourite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
                               color: isFavourite
-                                  ? const Color(0xFFFF385C)
-                                  : const Color(0xFF222222),
+                                  ? const Color(0xFF2E7FD8)
+                                  : const Color(0xFF717171),
                               size: 20,
                             ),
                     ),
@@ -664,7 +702,6 @@ class _HouseCardState extends State<HouseCard> {
 
             const SizedBox(height: 12),
 
-            // House Details
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -715,7 +752,6 @@ class _HouseCardState extends State<HouseCard> {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      // Rooms Info
                       Row(
                         children: [
                           const Icon(
@@ -734,7 +770,6 @@ class _HouseCardState extends State<HouseCard> {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      // Owner Info
                       Row(
                         children: [
                           CircleAvatar(
@@ -744,7 +779,11 @@ class _HouseCardState extends State<HouseCard> {
                                 ? NetworkImage(ownerProfilePicture)
                                 : null,
                             child: ownerProfilePicture.isEmpty
-                                ? const Icon(Icons.person, size: 14, color: Colors.grey)
+                                ? const Icon(
+                                    Icons.person,
+                                    size: 14,
+                                    color: Colors.grey,
+                                  )
                                 : null,
                           ),
                           const SizedBox(width: 8),

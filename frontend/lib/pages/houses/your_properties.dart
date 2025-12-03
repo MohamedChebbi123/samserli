@@ -19,7 +19,7 @@ class _YourPropertiesState extends State<YourProperties> {
   bool isLoading = true;
   String? errorMessage;
 
-  String selectedFilter = "all"; // all, rent, sale
+  String selectedFilter = "all"; 
 
   @override
   void initState() {
@@ -75,7 +75,6 @@ class _YourPropertiesState extends State<YourProperties> {
 
   @override
   Widget build(BuildContext context) {
-    // Apply filters
     final filteredProperties = selectedFilter == "all"
         ? properties
         : properties.where((p) {
@@ -89,126 +88,138 @@ class _YourPropertiesState extends State<YourProperties> {
           }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "Your Properties",
           style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF222222),
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).textTheme.displayLarge?.color,
+            letterSpacing: -0.5,
           ),
         ),
         centerTitle: false,
-        backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF222222)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Color(0xFF222222)),
-            onPressed: fetchUserProperties,
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            child: IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2E7FD8).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.refresh_rounded,
+                  color: Color(0xFF2E7FD8),
+                  size: 20,
+                ),
+              ),
+              onPressed: fetchUserProperties,
+            ),
           ),
         ],
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2E7FD8)),
+                strokeWidth: 3,
+              ),
+            )
           : errorMessage != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          size: 60,
-                          color: Colors.red[300],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          errorMessage!,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          onPressed: fetchUserProperties,
-                          icon: const Icon(Icons.refresh),
-                          label: const Text("Retry"),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue[700],
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : Column(
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 12),
-
-                    // Filter Buttons
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        children: [
-                          _buildFilterButton("All", "all"),
-                          const SizedBox(width: 8),
-                          _buildFilterButton("For Rent", "rent"),
-                          const SizedBox(width: 8),
-                          _buildFilterButton("For Sale", "sale"),
-                        ],
-                      ),
-                    ),
-
+                    Icon(Icons.error_outline, size: 60, color: Colors.red[300]),
                     const SizedBox(height: 16),
-
-                    Expanded(
-                      child: RefreshIndicator(
-                        onRefresh: fetchUserProperties,
-                        child: filteredProperties.isEmpty
-                            ? Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.home_outlined,
-                                      size: 80,
-                                      color: Colors.grey[400],
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      selectedFilter == "all"
-                                          ? "You don't have any properties yet"
-                                          : "No properties match this filter",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : ListView.builder(
-                                padding: const EdgeInsets.all(16.0),
-                                itemCount: filteredProperties.length,
-                                itemBuilder: (context, index) {
-                                  final property = filteredProperties[index];
-                                  return PropertyCard(property: property);
-                                },
-                              ),
+                    Text(
+                      errorMessage!,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: fetchUserProperties,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text("Retry"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue[700],
+                        foregroundColor: Colors.white,
                       ),
                     ),
                   ],
                 ),
+              ),
+            )
+          : Column(
+              children: [
+                const SizedBox(height: 12),
+
+                
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      _buildFilterButton("All", "all"),
+                      const SizedBox(width: 8),
+                      _buildFilterButton("For Rent", "rent"),
+                      const SizedBox(width: 8),
+                      _buildFilterButton("For Sale", "sale"),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: fetchUserProperties,
+                    child: filteredProperties.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.home_outlined,
+                                  size: 80,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  selectedFilter == "all"
+                                      ? "You don't have any properties yet"
+                                      : "No properties match this filter",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(16.0),
+                            itemCount: filteredProperties.length,
+                            itemBuilder: (context, index) {
+                              final property = filteredProperties[index];
+                              return PropertyCard(property: property);
+                            },
+                          ),
+                  ),
+                ),
+              ],
+            ),
       bottomNavigationBar: const Navbar(),
     );
   }
 
-  // Filter Button Widget
+
   Widget _buildFilterButton(String label, String value) {
     final isSelected = selectedFilter == value;
 
@@ -222,11 +233,12 @@ class _YourPropertiesState extends State<YourProperties> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF222222) : Colors.white,
+            color: isSelected ? const Color(0xFF2E7FD8) : Colors.white,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color:
-                  isSelected ? const Color(0xFF222222) : Colors.grey.shade300,
+              color: isSelected
+                  ? const Color(0xFF2E7FD8)
+                  : Colors.grey.shade300,
               width: 1.5,
             ),
           ),
@@ -234,7 +246,7 @@ class _YourPropertiesState extends State<YourProperties> {
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: isSelected ? Colors.white : const Color(0xFF222222),
+              color: isSelected ? Colors.white : const Color(0xFF717171),
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -271,7 +283,8 @@ class _PropertyCardState extends State<PropertyCard> {
       }
 
       final uri = Uri.parse(
-          "http://10.0.2.2:8000/delete_property/${widget.property['id']}");
+        "http://10.0.2.2:8000/delete_property/${widget.property['id']}",
+      );
       final response = await http.delete(
         uri,
         headers: {
@@ -288,7 +301,6 @@ class _PropertyCardState extends State<PropertyCard> {
               backgroundColor: Colors.green,
             ),
           );
-          // Refresh the page
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => const YourProperties()),
           );
@@ -300,9 +312,9 @@ class _PropertyCardState extends State<PropertyCard> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
       }
     }
   }
@@ -314,7 +326,8 @@ class _PropertyCardState extends State<PropertyCard> {
         return AlertDialog(
           title: const Text("Delete Property"),
           content: const Text(
-              "Are you sure you want to delete this property? This action cannot be undone."),
+            "Are you sure you want to delete this property? This action cannot be undone.",
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -335,7 +348,7 @@ class _PropertyCardState extends State<PropertyCard> {
   }
 
   void showEditOptions() {
-    final scaffoldContext = context; // Store the parent context
+    final scaffoldContext = context; 
     showModalBottomSheet(
       context: context,
       builder: (BuildContext modalContext) {
@@ -352,21 +365,25 @@ class _PropertyCardState extends State<PropertyCard> {
                   final result = await Navigator.push(
                     scaffoldContext,
                     MaterialPageRoute(
-                      builder: (context) => EditProperty(property: widget.property),
+                      builder: (context) =>
+                          EditProperty(property: widget.property),
                     ),
                   );
-                  // Refresh the page if property was updated
                   if (result == true && mounted) {
                     Navigator.of(scaffoldContext).pushReplacement(
-                      MaterialPageRoute(builder: (context) => const YourProperties()),
+                      MaterialPageRoute(
+                        builder: (context) => const YourProperties(),
+                      ),
                     );
                   }
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text("Delete Property",
-                    style: TextStyle(color: Colors.red)),
+                title: const Text(
+                  "Delete Property",
+                  style: TextStyle(color: Colors.red),
+                ),
                 onTap: () {
                   Navigator.pop(modalContext);
                   showDeleteConfirmation();
@@ -381,12 +398,10 @@ class _PropertyCardState extends State<PropertyCard> {
 
   @override
   Widget build(BuildContext context) {
-    // Parse images - handle both JSON string and list
     List<String> images = [];
     final housePicture = widget.property['house_picture'];
     if (housePicture != null) {
       if (housePicture is String) {
-        // If it's a JSON string, decode it
         try {
           final decoded = jsonDecode(housePicture);
           images = List<String>.from(decoded);
@@ -395,13 +410,14 @@ class _PropertyCardState extends State<PropertyCard> {
           images = [];
         }
       } else if (housePicture is List) {
-        // If it's already a list, use it directly
         images = List<String>.from(housePicture);
       }
     }
     final firstImage = images.isNotEmpty ? images[0] : null;
 
-    final status = (widget.property['status'] ?? 'N/A').toString().toLowerCase();
+    final status = (widget.property['status'] ?? 'N/A')
+        .toString()
+        .toLowerCase();
 
     return GestureDetector(
       onTap: () {
@@ -417,7 +433,6 @@ class _PropertyCardState extends State<PropertyCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Property Image
             Stack(
               children: [
                 ClipRRect(
@@ -443,8 +458,10 @@ class _PropertyCardState extends State<PropertyCard> {
                   top: 12,
                   right: 12,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: status.contains("rent")
                           ? Colors.blue.withOpacity(0.9)
@@ -485,7 +502,6 @@ class _PropertyCardState extends State<PropertyCard> {
 
             const SizedBox(height: 12),
 
-            // Property Details
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -517,8 +533,11 @@ class _PropertyCardState extends State<PropertyCard> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(Icons.bed_outlined,
-                              size: 16, color: Colors.grey[600]),
+                          Icon(
+                            Icons.bed_outlined,
+                            size: 16,
+                            color: Colors.grey[600],
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             '${widget.property['rooms'] ?? 0} rooms',

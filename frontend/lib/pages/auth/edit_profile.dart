@@ -77,7 +77,6 @@ class _EditProfileState extends State<EditProfile> {
 
       request.headers['Authorization'] = 'Bearer $token';
 
-      // Add fields only if they've changed
       if (firstNameController.text != widget.userData['first_name']) {
         request.fields['first_name'] = firstNameController.text;
       }
@@ -88,7 +87,6 @@ class _EditProfileState extends State<EditProfile> {
         request.fields['phone_number'] = phoneController.text;
       }
 
-      // Add profile picture if selected
       if (_selectedImage != null) {
         request.files.add(
           await http.MultipartFile.fromPath(
@@ -105,7 +103,6 @@ class _EditProfileState extends State<EditProfile> {
         final responseData = jsonDecode(response.body);
         _showSnackBar("Profile updated successfully!");
         
-        // Navigate back with updated data
         if (mounted) {
           Navigator.pop(context, responseData);
         }
@@ -136,7 +133,7 @@ class _EditProfileState extends State<EditProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           "Edit Profile",
@@ -158,7 +155,6 @@ class _EditProfileState extends State<EditProfile> {
             children: [
               const SizedBox(height: 16),
 
-              // Profile Picture Section
               Container(
                 padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
@@ -207,7 +203,7 @@ class _EditProfileState extends State<EditProfile> {
                             child: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFF385C),
+                                color: const Color(0xFF2E7FD8),
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: Colors.white,
@@ -237,7 +233,6 @@ class _EditProfileState extends State<EditProfile> {
               ),
               const SizedBox(height: 16),
 
-              // Form Fields
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -351,14 +346,13 @@ class _EditProfileState extends State<EditProfile> {
               ),
               const SizedBox(height: 24),
 
-              // Update Button
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
                   onPressed: isLoading ? null : _updateProfile,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF385C),
+                    backgroundColor: const Color(0xFF2E7FD8),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(

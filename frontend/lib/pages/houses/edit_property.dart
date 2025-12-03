@@ -16,14 +16,14 @@ class EditProperty extends StatefulWidget {
 class _EditPropertyState extends State<EditProperty> {
   final tokenstorage = const FlutterSecureStorage();
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController nameController;
   late TextEditingController descriptionController;
   late TextEditingController priceController;
   late TextEditingController roomsController;
   late TextEditingController latitudeController;
   late TextEditingController longitudeController;
-  
+
   String selectedStatus = "for rent";
   List<XFile> selectedImages = [];
   bool isSubmitting = false;
@@ -33,12 +33,24 @@ class _EditPropertyState extends State<EditProperty> {
   void initState() {
     super.initState();
     nameController = TextEditingController(text: widget.property['name'] ?? '');
-    descriptionController = TextEditingController(text: widget.property['description'] ?? '');
-    priceController = TextEditingController(text: widget.property['price']?.toString() ?? '');
-    roomsController = TextEditingController(text: widget.property['rooms']?.toString() ?? '');
-    latitudeController = TextEditingController(text: widget.property['latitude']?.toString() ?? '');
-    longitudeController = TextEditingController(text: widget.property['longitude']?.toString() ?? '');
-    selectedStatus = (widget.property['status'] ?? 'for rent').toString().toLowerCase();
+    descriptionController = TextEditingController(
+      text: widget.property['description'] ?? '',
+    );
+    priceController = TextEditingController(
+      text: widget.property['price']?.toString() ?? '',
+    );
+    roomsController = TextEditingController(
+      text: widget.property['rooms']?.toString() ?? '',
+    );
+    latitudeController = TextEditingController(
+      text: widget.property['latitude']?.toString() ?? '',
+    );
+    longitudeController = TextEditingController(
+      text: widget.property['longitude']?.toString() ?? '',
+    );
+    selectedStatus = (widget.property['status'] ?? 'for rent')
+        .toString()
+        .toLowerCase();
   }
 
   @override
@@ -60,9 +72,9 @@ class _EditPropertyState extends State<EditProperty> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error picking images: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error picking images: $e")));
       }
     }
   }
@@ -95,11 +107,9 @@ class _EditPropertyState extends State<EditProperty> {
       var request = http.MultipartRequest('PUT', uri);
 
       request.headers['Authorization'] = "Bearer $token";
-      
-      // Add required house_id
+
       request.fields['house_id'] = widget.property['id'].toString();
-      
-      // Add fields only if they have values
+
       if (nameController.text.isNotEmpty) {
         request.fields['name'] = nameController.text;
       }
@@ -120,7 +130,6 @@ class _EditPropertyState extends State<EditProperty> {
       }
       request.fields['status'] = selectedStatus;
 
-      // Add new images if selected
       if (selectedImages.isNotEmpty) {
         for (var image in selectedImages) {
           request.files.add(
@@ -149,9 +158,9 @@ class _EditPropertyState extends State<EditProperty> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
       }
     } finally {
       if (mounted) {
@@ -165,13 +174,15 @@ class _EditPropertyState extends State<EditProperty> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           "Edit Property",
           style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF222222),
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1A1A1A),
+            letterSpacing: -0.5,
           ),
         ),
         backgroundColor: Colors.white,
@@ -186,17 +197,30 @@ class _EditPropertyState extends State<EditProperty> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Property Information",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF222222),
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2E7FD8),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      "Property Information",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1A1A),
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 24),
 
-                // Property Name
                 TextFormField(
                   controller: nameController,
                   decoration: InputDecoration(
@@ -215,7 +239,6 @@ class _EditPropertyState extends State<EditProperty> {
                 ),
                 const SizedBox(height: 16),
 
-                // Description
                 TextFormField(
                   controller: descriptionController,
                   decoration: InputDecoration(
@@ -235,7 +258,6 @@ class _EditPropertyState extends State<EditProperty> {
                 ),
                 const SizedBox(height: 16),
 
-                // Price
                 TextFormField(
                   controller: priceController,
                   decoration: InputDecoration(
@@ -258,7 +280,6 @@ class _EditPropertyState extends State<EditProperty> {
                 ),
                 const SizedBox(height: 16),
 
-                // Rooms
                 TextFormField(
                   controller: roomsController,
                   decoration: InputDecoration(
@@ -321,7 +342,6 @@ class _EditPropertyState extends State<EditProperty> {
                 ),
                 const SizedBox(height: 16),
 
-                // Location
                 const Text(
                   "Location Coordinates",
                   style: TextStyle(
@@ -342,7 +362,9 @@ class _EditPropertyState extends State<EditProperty> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        keyboardType: TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return "Required";
@@ -364,7 +386,9 @@ class _EditPropertyState extends State<EditProperty> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        keyboardType: TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return "Required";
@@ -380,7 +404,6 @@ class _EditPropertyState extends State<EditProperty> {
                 ),
                 const SizedBox(height: 24),
 
-                // Images Section
                 const Text(
                   "Property Images",
                   style: TextStyle(
@@ -392,13 +415,10 @@ class _EditPropertyState extends State<EditProperty> {
                 const SizedBox(height: 8),
                 Text(
                   "Select new images to replace existing ones (optional)",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
                 const SizedBox(height: 12),
-                
+
                 // Image picker button
                 OutlinedButton.icon(
                   onPressed: pickImages,
@@ -435,7 +455,9 @@ class _EditPropertyState extends State<EditProperty> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
                             image: DecorationImage(
-                              image: FileImage(File(selectedImages[index].path)),
+                              image: FileImage(
+                                File(selectedImages[index].path),
+                              ),
                               fit: BoxFit.cover,
                             ),
                           ),

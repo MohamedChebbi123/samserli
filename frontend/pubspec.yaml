@@ -29,3 +29,4 @@ flutter:
   assets:
     - lib/assets/rent (1).png
     - lib/assets/sign.png
+    - lib/assets/applogo.png

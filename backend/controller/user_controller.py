@@ -8,6 +8,11 @@ from schemas.Userlogin import Userlogin
 from utils.jwt_handler import create_access_token,verify_access_token
 from schemas.Messageschema import Messageschema
 from models.Message import Message
+from models.BlockedUsers import BlockedUsers
+from models.PasswordReset import PasswordReset
+from utils.emailsender import send_password_reset_code
+import random
+from datetime import datetime, timedelta
 
 def register(
     first_name:str=Form(...),
@@ -95,7 +100,10 @@ def view_profile(authorization: str | None = Header(None),db:session=Depends(con
            }
 
 def send_message(
-    data: Messageschema,
+    sender_id: int,
+    receiver_id: int,
+    content: str,
+    image: UploadFile | None,
     authorization: str | None = Header(None),
     db: session = Depends(connect_databse)
 ):
@@ -111,23 +119,33 @@ def send_message(
     if not payload or "sub" not in payload:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
-    sender_id = int(payload["sub"])
+    authenticated_user_id = int(payload["sub"])
     
-    # Verify sender matches the authenticated user
-    if sender_id != data.sender_id:
+    if authenticated_user_id != sender_id:
         raise HTTPException(status_code=403, detail="Cannot send message as another user")
     
-    # Verify receiver exists
-    receiver = db.query(Users).filter(Users.user_id == data.receiver_id).first()
+    receiver = db.query(Users).filter(Users.user_id == receiver_id).first()
     if not receiver:
         raise HTTPException(status_code=404, detail="Receiver not found")
     
-    # Create message
-
+    block_exists = db.query(BlockedUsers).filter(
+        ((BlockedUsers.blocker_id == sender_id) & (BlockedUsers.blocked_id == receiver_id)) |
+        ((BlockedUsers.blocker_id == receiver_id) & (BlockedUsers.blocked_id == sender_id))
+    ).first()
+    
+    if block_exists:
+        raise HTTPException(status_code=403, detail="Cannot send message to this user")
+    
+    image_url = None
+    if image:
+        from utils.cloudinary_handler import upload_message_image
+        image_url = upload_message_image(image)
+    
     new_message = Message(
-        sender_id=data.sender_id,
-        receiver_id=data.receiver_id,
-        content=data.content
+        sender_id=sender_id,
+        receiver_id=receiver_id,
+        content=content,
+        image_url=image_url
     )
     
     db.add(new_message)
@@ -136,7 +154,8 @@ def send_message(
     
     return {
         "msg": "Message sent successfully",
-        "message_id": new_message.id
+        "message_id": new_message.id,
+        "image_url": image_url
     }
 
 def get_conversation(
@@ -158,7 +177,6 @@ def get_conversation(
 
     current_user_id = int(payload["sub"])
     
-    # Get all messages between the two users
     from models.Message import Message
     messages = db.query(Message).filter(
         ((Message.sender_id == current_user_id) & (Message.receiver_id == other_user_id)) |
@@ -171,6 +189,7 @@ def get_conversation(
             "sender_id": msg.sender_id,
             "receiver_id": msg.receiver_id,
             "content": msg.content,
+            "image_url": msg.image_url,
             "sent_at": msg.sent_at.isoformat() if msg.sent_at else None,
             "is_mine": msg.sender_id == current_user_id
         }
@@ -197,20 +216,17 @@ def update_message(
 
     current_user_id = int(payload["sub"])
     
-    # Find the message
     message = db.query(Message).filter(Message.id == message_id).first()
     
     if not message:
         raise HTTPException(status_code=404, detail="Message not found")
     
-    # Verify the user is the sender of the message
     if message.sender_id != current_user_id:
         raise HTTPException(
             status_code=403, 
             detail="You can only update your own messages"
         )
     
-    # Update the message content
     message.content = new_content
     db.commit()
     db.refresh(message)
@@ -243,20 +259,17 @@ def delete_message(
 
     current_user_id = int(payload["sub"])
     
-    # Find the message
     message = db.query(Message).filter(Message.id == message_id).first()
     
     if not message:
         raise HTTPException(status_code=404, detail="Message not found")
     
-    # Verify the user is the sender of the message
     if message.sender_id != current_user_id:
         raise HTTPException(
             status_code=403, 
             detail="You can only delete your own messages"
         )
     
-    # Delete the message
     db.delete(message)
     db.commit()
     
@@ -282,16 +295,13 @@ def get_all_conversations(
 
     current_user_id = int(payload["sub"])
     
-    # Get all unique users the current user has conversed with
     from sqlalchemy import or_, case, func
     
-    # Create a computed column for the "other user" in the conversation
     other_user_id_col = case(
         (Message.sender_id == current_user_id, Message.receiver_id),
         else_=Message.sender_id
     )
     
-    # Subquery to get the latest message for each conversation
     subquery = (
         db.query(
             Message.id,
@@ -316,7 +326,6 @@ def get_all_conversations(
         .subquery()
     )
     
-    # Get only the latest message for each conversation
     latest_messages = (
         db.query(subquery)
         .filter(subquery.c.rn == 1)
@@ -325,20 +334,25 @@ def get_all_conversations(
     
     conversations = []
     for msg in latest_messages:
-        # Get the other user's info
         other_user = db.query(Users).filter(Users.user_id == msg.other_user_id).first()
         
         if other_user:
+            unread_count = db.query(Message).filter(
+                Message.sender_id == msg.other_user_id,
+                Message.receiver_id == current_user_id,
+                Message.is_read == False
+            ).count()
+            
             conversations.append({
                 "user_id": other_user.user_id,
                 "user_name": f"{other_user.first_name} {other_user.last_name}",
                 "user_image": other_user.profile_picture or "",
                 "last_message": msg.content,
                 "last_message_time": msg.sent_at.isoformat() if msg.sent_at else None,
-                "is_last_message_mine": msg.sender_id == current_user_id
+                "is_last_message_mine": msg.sender_id == current_user_id,
+                "unread_count": unread_count
             })
     
-    # Sort by most recent message
     conversations.sort(key=lambda x: x['last_message_time'] or '', reverse=True)
     
     return conversations
@@ -365,13 +379,11 @@ def edit_profile(
 
     user_id = payload["sub"]
     
-    # Find the user
     found_user = db.query(Users).filter(Users.user_id == user_id).first()
     
     if not found_user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Update fields if provided
     if first_name:
         if len(first_name.strip()) < 6:
             raise HTTPException(status_code=400, detail="First name should be more than 6 characters")
@@ -401,4 +413,313 @@ def edit_profile(
         "email": found_user.email,
         "profile_picture": found_user.profile_picture,
         "phone_number": found_user.phone_number
+    }
+
+def get_unread_message_count(
+    authorization: str | None = Header(None),
+    db: session = Depends(connect_databse)
+):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization header missing")
+
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+
+    token = authorization.split(" ")[1]
+    payload = verify_access_token(token)
+
+    if not payload or "sub" not in payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    current_user_id = int(payload["sub"])
+    
+    unread_count = db.query(Message).filter(
+        Message.receiver_id == current_user_id,
+        Message.is_read == False
+    ).count()
+    
+    return {"unread_count": unread_count}
+
+def mark_conversation_as_read(
+    other_user_id: int,
+    authorization: str | None = Header(None),
+    db: session = Depends(connect_databse)
+):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization header missing")
+
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+
+    token = authorization.split(" ")[1]
+    payload = verify_access_token(token)
+
+    if not payload or "sub" not in payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    current_user_id = int(payload["sub"])
+    
+    db.query(Message).filter(
+        Message.sender_id == other_user_id,
+        Message.receiver_id == current_user_id,
+        Message.is_read == False
+    ).update({"is_read": True})
+    
+    db.commit()
+    
+    return {"msg": "Messages marked as read"}
+
+def block_user(
+    user_id_to_block: int,
+    authorization: str | None = Header(None),
+    db: session = Depends(connect_databse)
+):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization header missing")
+
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+
+    token = authorization.split(" ")[1]
+    payload = verify_access_token(token)
+
+    if not payload or "sub" not in payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    current_user_id = int(payload["sub"])
+    
+    if current_user_id == user_id_to_block:
+        raise HTTPException(status_code=400, detail="Cannot block yourself")
+    
+    user_to_block = db.query(Users).filter(Users.user_id == user_id_to_block).first()
+    if not user_to_block:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    existing_block = db.query(BlockedUsers).filter(
+        BlockedUsers.blocker_id == current_user_id,
+        BlockedUsers.blocked_id == user_id_to_block
+    ).first()
+    
+    if existing_block:
+        raise HTTPException(status_code=400, detail="User already blocked")
+    
+    new_block = BlockedUsers(
+        blocker_id=current_user_id,
+        blocked_id=user_id_to_block
+    )
+    
+    db.add(new_block)
+    db.commit()
+    
+    return {"msg": "User blocked successfully"}
+
+def unblock_user(
+    user_id_to_unblock: int,
+    authorization: str | None = Header(None),
+    db: session = Depends(connect_databse)
+):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization header missing")
+
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+
+    token = authorization.split(" ")[1]
+    payload = verify_access_token(token)
+
+    if not payload or "sub" not in payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    current_user_id = int(payload["sub"])
+    
+    block = db.query(BlockedUsers).filter(
+        BlockedUsers.blocker_id == current_user_id,
+        BlockedUsers.blocked_id == user_id_to_unblock
+    ).first()
+    
+    if not block:
+        raise HTTPException(status_code=404, detail="User is not blocked")
+    
+    db.delete(block)
+    db.commit()
+    
+    return {"msg": "User unblocked successfully"}
+
+def check_block_status(
+    other_user_id: int,
+    authorization: str | None = Header(None),
+    db: session = Depends(connect_databse)
+):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization header missing")
+
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+
+    token = authorization.split(" ")[1]
+    payload = verify_access_token(token)
+
+    if not payload or "sub" not in payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    current_user_id = int(payload["sub"])
+    
+    i_blocked_them = db.query(BlockedUsers).filter(
+        BlockedUsers.blocker_id == current_user_id,
+        BlockedUsers.blocked_id == other_user_id
+    ).first() is not None
+    
+    they_blocked_me = db.query(BlockedUsers).filter(
+        BlockedUsers.blocker_id == other_user_id,
+        BlockedUsers.blocked_id == current_user_id
+    ).first() is not None
+    
+    return {
+        "i_blocked_them": i_blocked_them,
+        "they_blocked_me": they_blocked_me
+    }
+
+def get_blocked_users(
+    authorization: str | None = Header(None),
+    db: session = Depends(connect_databse)
+):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization header missing")
+
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+
+    token = authorization.split(" ")[1]
+    payload = verify_access_token(token)
+
+    if not payload or "sub" not in payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    current_user_id = int(payload["sub"])
+    
+    blocked = db.query(BlockedUsers).filter(
+        BlockedUsers.blocker_id == current_user_id
+    ).all()
+    
+    blocked_users = []
+    for block in blocked:
+        user = db.query(Users).filter(Users.user_id == block.blocked_id).first()
+        if user:
+            blocked_users.append({
+                "user_id": user.user_id,
+                "user_name": f"{user.first_name} {user.last_name}",
+                "user_image": user.profile_picture or "",
+                "blocked_at": block.blocked_at.isoformat() if block.blocked_at else None
+            })
+    
+    return blocked_users
+
+async def request_password_reset(
+    email: str = Form(...),
+    db: session = Depends(connect_databse)
+):
+    user = db.query(Users).filter(Users.email == email).first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=404, 
+            detail="No account found with this email address"
+        )
+    
+    verification_code = str(random.randint(1000, 9999))
+    
+    expires_at = datetime.utcnow() + timedelta(minutes=10)
+    
+    password_reset = PasswordReset(
+        email=email,
+        verification_code=verification_code,
+        expires_at=expires_at,
+        is_used=0
+    )
+    
+    db.add(password_reset)
+    db.commit()
+    
+    try:
+        await send_password_reset_code(email, verification_code)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to send email: {str(e)}"
+        )
+    
+    return {
+        "msg": "Verification code sent to your email",
+        "email": email
+    }
+
+def verify_reset_code(
+    email: str = Form(...),
+    code: str = Form(...),
+    db: session = Depends(connect_databse)
+):
+    reset_request = db.query(PasswordReset).filter(
+        PasswordReset.email == email,
+        PasswordReset.verification_code == code,
+        PasswordReset.is_used == 0
+    ).order_by(PasswordReset.created_at.desc()).first()
+    
+    if not reset_request:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid verification code"
+        )
+    
+    if datetime.utcnow() > reset_request.expires_at:
+        raise HTTPException(
+            status_code=400,
+            detail="Verification code has expired. Please request a new one."
+        )
+    
+    return {
+        "msg": "Code verified successfully",
+        "email": email,
+        "code": code
+    }
+
+def reset_password(
+    email: str = Form(...),
+    code: str = Form(...),
+    new_password: str = Form(...),
+    db: session = Depends(connect_databse)
+):
+    reset_request = db.query(PasswordReset).filter(
+        PasswordReset.email == email,
+        PasswordReset.verification_code == code,
+        PasswordReset.is_used == 0
+    ).order_by(PasswordReset.created_at.desc()).first()
+    
+    if not reset_request:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid verification code"
+        )
+    
+    if datetime.utcnow() > reset_request.expires_at:
+        raise HTTPException(
+            status_code=400,
+            detail="Verification code has expired"
+        )
+    
+    user = db.query(Users).filter(Users.email == email).first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+    
+    user.password = hash_password(new_password)
+    
+    reset_request.is_used = 1
+    
+    db.commit()
+    
+    return {
+        "msg": "Password reset successfully"
     }

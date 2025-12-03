@@ -117,7 +117,6 @@ def fetch_houses(
 
     found_houses = db.query(Houses).options(joinedload(Houses.user)).filter(Houses.user_id != userid).all()
 
-    # Get all user's favourites for efficient lookup
     user_favourites = db.query(Favourites.house_id).filter(Favourites.user_id == userid).all()
     favourite_house_ids = {fav.house_id for fav in user_favourites}
 
@@ -163,7 +162,6 @@ def delete_user_property(
 
     userid = payload["sub"]
 
-    # Find the house
     found_house = db.query(Houses).filter(
         Houses.house_id == house_id,
         Houses.user_id == userid
@@ -209,7 +207,6 @@ def modify_user_property(
 
     userid = payload["sub"]
 
-    # Find the house
     found_house = db.query(Houses).filter(
         Houses.house_id == house_id,
         Houses.user_id == userid
@@ -221,7 +218,7 @@ def modify_user_property(
             detail="Property not found or you don't have permission to modify it"
         )
 
-    # Update fields if provided
+
     if latitude is not None:
         found_house.latitude = latitude
     if longitude is not None:
@@ -237,7 +234,6 @@ def modify_user_property(
     if description is not None:
         found_house.description = description
 
-    # Handle new pictures if provided
     if house_pictures:
         house_images_urls = []
         for picture in house_pictures:
@@ -282,12 +278,10 @@ def add_to_favourites(
 
     user_id = int(payload["sub"])
 
-    # Check if house exists
     house = db.query(Houses).filter(Houses.house_id == house_id).first()
     if not house:
         raise HTTPException(status_code=404, detail="House not found")
 
-    # Check if already in favourites
     existing_favourite = db.query(Favourites).filter(
         Favourites.user_id == user_id,
         Favourites.house_id == house_id
@@ -296,7 +290,6 @@ def add_to_favourites(
     if existing_favourite:
         raise HTTPException(status_code=400, detail="House is already in favourites")
 
-    # Add to favourites
     new_favourite = Favourites(
         user_id=user_id,
         house_id=house_id
@@ -330,7 +323,6 @@ def remove_from_favourites(
 
     user_id = int(payload["sub"])
 
-    # Find the favourite
     favourite = db.query(Favourites).filter(
         Favourites.user_id == user_id,
         Favourites.house_id == house_id
@@ -364,7 +356,6 @@ def get_user_favourites(
 
     user_id = int(payload["sub"])
 
-    # Get all favourites with house details
     favourites = db.query(Favourites).options(
         joinedload(Favourites.house).joinedload(Houses.user)
     ).filter(Favourites.user_id == user_id).all()
@@ -413,7 +404,6 @@ def check_if_favourite(
 
     user_id = int(payload["sub"])
 
-    # Check if house is in favourites
     favourite = db.query(Favourites).filter(
         Favourites.user_id == user_id,
         Favourites.house_id == house_id

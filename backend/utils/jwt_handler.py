@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 
 
-SECRET_KEY = "P1C#.G!%hSR<Yv%qy0c;R~pqZ[7(<KhS4;Tx0~+.c:$&!)8*qL/.?fMH7~cx" # i know
+SECRET_KEY = "P1C#.G!%hSR<Yv%qy0c;R~pqZ[7(<KhS4;Tx0~+.c:$&!)8*qL/.?fMH7~cx"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 180
 

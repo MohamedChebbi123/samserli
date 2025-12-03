@@ -73,9 +73,7 @@ class _HousedetailsState extends State<Housedetails> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                isFavourite
-                    ? "Added to favourites"
-                    : "Removed from favourites",
+                isFavourite ? "Added to favourites" : "Removed from favourites",
               ),
               backgroundColor: Colors.green,
               behavior: SnackBarBehavior.floating,
@@ -105,12 +103,10 @@ class _HousedetailsState extends State<Housedetails> {
 
   @override
   Widget build(BuildContext context) {
-    // Parse images - handle both JSON string and list
     List<String> images = [];
     final housePicture = widget.house['house_picture'];
     if (housePicture != null) {
       if (housePicture is String) {
-        // If it's a JSON string, decode it
         try {
           final decoded = jsonDecode(housePicture);
           images = List<String>.from(decoded);
@@ -119,45 +115,88 @@ class _HousedetailsState extends State<Housedetails> {
           images = [];
         }
       } else if (housePicture is List) {
-        // If it's already a list, use it directly
         images = List<String>.from(housePicture);
       }
     }
-    
+
     final String name = widget.house['name'] ?? 'Unnamed';
     final String status = widget.house['status'] ?? 'unknown';
     final String description = widget.house['description'] ?? '';
     final price = widget.house['price'] ?? '';
     final int rooms = widget.house['rooms'] ?? 0;
-    
-    // Owner information
+
     final Map<String, dynamic> owner = widget.house['owner'] ?? {};
-    final String ownerName = owner['full_name'] ?? 'Unknown Owner';
+    final String ownerName = owner['full_name'] ?? 'you ';
     final String ownerEmail = owner['email'] ?? '';
     final String ownerPhone = owner['phone_number'] ?? '';
     final String ownerImage = owner['profile_picture'] ?? '';
     final int? ownerId = owner['user_id'];
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF222222)),
-          onPressed: () => Navigator.pop(context),
+        leading: Container(
+          margin: const EdgeInsets.only(left: 8),
+          child: IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.arrow_back_rounded,
+                color: Color(0xFF1A1A1A),
+                size: 20,
+              ),
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.share_outlined, color: Color(0xFF222222)),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: Icon(
-              isFavourite ? Icons.favorite : Icons.favorite_border,
-              color: isFavourite ? const Color(0xFFFF385C) : const Color(0xFF222222),
+          
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            child: IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: isFavourite
+                      ? const LinearGradient(
+                          colors: [Color(0xFF4A90E2), Color(0xFF2E7FD8)],
+                        )
+                      : null,
+                  color: isFavourite ? null : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isFavourite
+                          ? const Color(0xFF2E7FD8).withOpacity(0.3)
+                          : Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  isFavourite
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_border_rounded,
+                  color: isFavourite ? Colors.white : const Color(0xFF1A1A1A),
+                  size: 20,
+                ),
+              ),
+              onPressed: isLoadingFavourite ? null : toggleFavourite,
             ),
-            onPressed: isLoadingFavourite ? null : toggleFavourite,
           ),
         ],
       ),
@@ -205,9 +244,10 @@ class _HousedetailsState extends State<Housedetails> {
                               color: Colors.grey[100],
                               child: Center(
                                 child: CircularProgressIndicator(
-                                  value: progress.cumulativeBytesLoaded /
+                                  value:
+                                      progress.cumulativeBytesLoaded /
                                       (progress.expectedTotalBytes ?? 1),
-                                  color: const Color(0xFFFF385C),
+                                  color: const Color(0xFF2E7FD8),
                                   strokeWidth: 2,
                                 ),
                               ),
@@ -217,7 +257,6 @@ class _HousedetailsState extends State<Housedetails> {
                       },
                     ),
                   ),
-                  // Page indicators
                   if (images.length > 1)
                     Positioned(
                       bottom: 16,
@@ -266,10 +305,7 @@ class _HousedetailsState extends State<Housedetails> {
                     const SizedBox(height: 8),
                     Text(
                       "No images available",
-                      style: TextStyle(
-                        color: Colors.grey[500],
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.grey[500], fontSize: 14),
                     ),
                   ],
                 ),
@@ -289,7 +325,7 @@ class _HousedetailsState extends State<Housedetails> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  
+
                   Row(
                     children: [
                       Container(
@@ -313,7 +349,7 @@ class _HousedetailsState extends State<Housedetails> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  
+
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.baseline,
                     textBaseline: TextBaseline.alphabetic,
@@ -336,10 +372,9 @@ class _HousedetailsState extends State<Housedetails> {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 20),
-                  
-                  // Rooms Information
+
                   Row(
                     children: [
                       const Icon(
@@ -358,11 +393,11 @@ class _HousedetailsState extends State<Housedetails> {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 24),
                   const Divider(),
                   const SizedBox(height: 24),
-                  
+
                   const Text(
                     "About this place",
                     style: TextStyle(
@@ -373,7 +408,9 @@ class _HousedetailsState extends State<Housedetails> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    description.isEmpty ? "No description available." : description,
+                    description.isEmpty
+                        ? "No description available."
+                        : description,
                     style: const TextStyle(
                       fontSize: 16,
                       color: Color(0xFF222222),
@@ -383,8 +420,7 @@ class _HousedetailsState extends State<Housedetails> {
                   const SizedBox(height: 32),
                   const Divider(),
                   const SizedBox(height: 24),
-                  
-                  // Location Map Section
+
                   const Text(
                     "Location",
                     style: TextStyle(
@@ -394,8 +430,7 @@ class _HousedetailsState extends State<Housedetails> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  
-                  // Coordinates Display
+
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -424,8 +459,7 @@ class _HousedetailsState extends State<Housedetails> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
-                  // Map Container
+
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: SizedBox(
@@ -433,12 +467,14 @@ class _HousedetailsState extends State<Housedetails> {
                       child: GoogleMap(
                         initialCameraPosition: CameraPosition(
                           target: LatLng(
-                            widget.house['latitude'] is String 
-                              ? double.tryParse(widget.house['latitude']) ?? 0.0
-                              : (widget.house['latitude'] ?? 0.0).toDouble(),
+                            widget.house['latitude'] is String
+                                ? double.tryParse(widget.house['latitude']) ??
+                                      0.0
+                                : (widget.house['latitude'] ?? 0.0).toDouble(),
                             widget.house['longitude'] is String
-                              ? double.tryParse(widget.house['longitude']) ?? 0.0
-                              : (widget.house['longitude'] ?? 0.0).toDouble(),
+                                ? double.tryParse(widget.house['longitude']) ??
+                                      0.0
+                                : (widget.house['longitude'] ?? 0.0).toDouble(),
                           ),
                           zoom: 15,
                         ),
@@ -446,12 +482,18 @@ class _HousedetailsState extends State<Housedetails> {
                           Marker(
                             markerId: const MarkerId('property_location'),
                             position: LatLng(
-                              widget.house['latitude'] is String 
-                                ? double.tryParse(widget.house['latitude']) ?? 0.0
-                                : (widget.house['latitude'] ?? 0.0).toDouble(),
+                              widget.house['latitude'] is String
+                                  ? double.tryParse(widget.house['latitude']) ??
+                                        0.0
+                                  : (widget.house['latitude'] ?? 0.0)
+                                        .toDouble(),
                               widget.house['longitude'] is String
-                                ? double.tryParse(widget.house['longitude']) ?? 0.0
-                                : (widget.house['longitude'] ?? 0.0).toDouble(),
+                                  ? double.tryParse(
+                                          widget.house['longitude'],
+                                        ) ??
+                                        0.0
+                                  : (widget.house['longitude'] ?? 0.0)
+                                        .toDouble(),
                             ),
                             infoWindow: InfoWindow(
                               title: name,
@@ -466,12 +508,11 @@ class _HousedetailsState extends State<Housedetails> {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 32),
                   const Divider(),
                   const SizedBox(height: 24),
-                  
-                  // Owner Information Section
+
                   const Text(
                     "Property Owner",
                     style: TextStyle(
@@ -481,7 +522,7 @@ class _HousedetailsState extends State<Housedetails> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -491,20 +532,22 @@ class _HousedetailsState extends State<Housedetails> {
                     ),
                     child: Row(
                       children: [
-                        // Owner profile picture
                         CircleAvatar(
                           radius: 30,
                           backgroundColor: Colors.grey[200],
-                          backgroundImage: ownerImage.isNotEmpty 
-                            ? NetworkImage(ownerImage)
-                            : null,
+                          backgroundImage: ownerImage.isNotEmpty
+                              ? NetworkImage(ownerImage)
+                              : null,
                           child: ownerImage.isEmpty
-                            ? const Icon(Icons.person, size: 30, color: Colors.grey)
-                            : null,
+                              ? const Icon(
+                                  Icons.person,
+                                  size: 30,
+                                  color: Colors.grey,
+                                )
+                              : null,
                         ),
                         const SizedBox(width: 16),
-                        
-                        // Owner details
+
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -565,7 +608,7 @@ class _HousedetailsState extends State<Housedetails> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -585,7 +628,7 @@ class _HousedetailsState extends State<Housedetails> {
                             }
                           : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF385C),
+                        backgroundColor: const Color(0xFF2E7FD8),
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -610,5 +653,4 @@ class _HousedetailsState extends State<Housedetails> {
       ),
     );
   }
-
 }

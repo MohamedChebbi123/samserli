@@ -25,6 +25,7 @@ class _MapPageState extends State<Map> {
   bool _permissionGranted = false;
   Position? _currentPosition;
   Set<Marker> _markers = {};
+  bool _isAddingProperty = false;
 
   final TextEditingController statusController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
@@ -65,6 +66,10 @@ class _MapPageState extends State<Map> {
   }
 
   Future<void> _sendHouseData(double latitude, double longitude) async {
+    setState(() {
+      _isAddingProperty = true;
+    });
+
     try {
       String? token = await tokenStorage.read(key: 'token');
 
@@ -82,10 +87,9 @@ class _MapPageState extends State<Map> {
       request.fields['description'] = descriptionController.text;
 
       for (var img in selectedImages) {
-        request.files.add(await http.MultipartFile.fromPath(
-          'house_pictures',
-          img.path,
-        ));
+        request.files.add(
+          await http.MultipartFile.fromPath('house_pictures', img.path),
+        );
       }
 
       var response = await request.send();
@@ -105,14 +109,18 @@ class _MapPageState extends State<Map> {
         descriptionController.clear();
         setState(() => selectedImages.clear());
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed: $responseBody")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Failed: $responseBody")));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    } finally {
+      setState(() {
+        _isAddingProperty = false;
+      });
     }
   }
 
@@ -123,23 +131,31 @@ class _MapPageState extends State<Map> {
       targetWidth: width,
     );
     final ui.FrameInfo fi = await codec.getNextFrame();
-    final ByteData? byteData =
-    await fi.image.toByteData(format: ui.ImageByteFormat.png);
+    final ByteData? byteData = await fi.image.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
     return BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
   }
 
   Future<void> gethouses() async {
-    BitmapDescriptor rentImage =
-    await getResizedMarker('lib/assets/rent (1).png', 80);
-    BitmapDescriptor saleImage =
-    await getResizedMarker('lib/assets/sign.png', 80);
+    BitmapDescriptor rentImage = await getResizedMarker(
+      'lib/assets/rent (1).png',
+      80,
+    );
+    BitmapDescriptor saleImage = await getResizedMarker(
+      'lib/assets/sign.png',
+      80,
+    );
 
     String? token = await tokenStorage.read(key: 'token');
     final uri = Uri.parse('http://10.0.2.2:8000/fetch_houses');
-    final response = await http.get(uri, headers: {
-      'Content-type': 'application/json',
-      'Authorization': 'Bearer $token',
-    });
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
@@ -150,8 +166,7 @@ class _MapPageState extends State<Map> {
         double? long = double.tryParse(house["longitude"].toString());
         String? name = house["name"];
         String? status = house["status"];
-        BitmapDescriptor imageIcon =
-        (status == "rent") ? rentImage : saleImage;
+        BitmapDescriptor imageIcon = (status == "rent") ? rentImage : saleImage;
 
         if (lat != null && long != null) {
           newMarkers.add(
@@ -186,7 +201,6 @@ class _MapPageState extends State<Map> {
     }
   }
 
-
   Future<void> getlocation(LatLng position) async {
     var longitude = position.longitude;
     var latitude = position.latitude;
@@ -200,7 +214,8 @@ class _MapPageState extends State<Map> {
           builder: (context, setState) {
             return AlertDialog(
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               title: const Text(
                 "Add Property",
                 style: TextStyle(
@@ -246,10 +261,12 @@ class _MapPageState extends State<Map> {
                         hintText: "Select rooms",
                       ),
                       items: List.generate(20, (index) => index + 1)
-                          .map((num) => DropdownMenuItem(
-                                value: num,
-                                child: Text(num.toString()),
-                              ))
+                          .map(
+                            (num) => DropdownMenuItem(
+                              value: num,
+                              child: Text(num.toString()),
+                            ),
+                          )
                           .toList(),
                       onChanged: (value) {
                         setState(() {
@@ -259,7 +276,6 @@ class _MapPageState extends State<Map> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Status Dropdown
                     DropdownButtonFormField<String>(
                       value: selectedStatus,
                       decoration: const InputDecoration(
@@ -267,14 +283,8 @@ class _MapPageState extends State<Map> {
                         hintText: "Select type",
                       ),
                       items: const [
-                        DropdownMenuItem(
-                          value: "rent",
-                          child: Text("Rent"),
-                        ),
-                        DropdownMenuItem(
-                          value: "sale",
-                          child: Text("Sale"),
-                        ),
+                        DropdownMenuItem(value: "rent", child: Text("Rent")),
+                        DropdownMenuItem(value: "sale", child: Text("Sale")),
                       ],
                       onChanged: (value) {
                         setState(() {
@@ -306,7 +316,10 @@ class _MapPageState extends State<Map> {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFF222222),
                         side: BorderSide(color: Colors.grey.shade300),
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 16,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -332,15 +345,17 @@ class _MapPageState extends State<Map> {
                               spacing: 8,
                               runSpacing: 8,
                               children: selectedImages
-                                  .map((img) => ClipRRect(
-                                borderRadius: BorderRadius.circular(6),
-                                child: Image.file(
-                                  File(img.path),
-                                  width: 60,
-                                  height: 60,
-                                  fit: BoxFit.cover,
-                                ),
-                              ))
+                                  .map(
+                                    (img) => ClipRRect(
+                                      borderRadius: BorderRadius.circular(6),
+                                      child: Image.file(
+                                        File(img.path),
+                                        width: 60,
+                                        height: 60,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  )
                                   .toList(),
                             ),
                           ],
@@ -379,25 +394,47 @@ class _MapPageState extends State<Map> {
               actions: [
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => _sendHouseData(latitude, longitude),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF385C),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      "Add Property",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+                  height: 50,
+                  child: _isAddingProperty
+                      ? Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF1E5FB8), Color(0xFF2E7FD8)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Center(
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                strokeWidth: 2.5,
+                              ),
+                            ),
+                          ),
+                        )
+                      : ElevatedButton(
+                          onPressed: () => _sendHouseData(latitude, longitude),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2E7FD8),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            "Add Property",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
                 ),
               ],
             );
@@ -407,15 +444,17 @@ class _MapPageState extends State<Map> {
     );
   }
 
-
   Future<void> _getCurrentLocation() async {
-    _currentPosition =
-    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    _currentPosition = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
 
     if (_mapController != null) {
-      _mapController!.animateCamera(CameraUpdate.newLatLng(
-        LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-      ));
+      _mapController!.animateCamera(
+        CameraUpdate.newLatLng(
+          LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+        ),
+      );
     }
   }
 
@@ -426,8 +465,10 @@ class _MapPageState extends State<Map> {
         title: const Text(
           'Explore Map',
           style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF222222),
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1A1A1A),
+            letterSpacing: -0.5,
           ),
         ),
         centerTitle: false,

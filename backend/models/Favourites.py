@@ -9,6 +9,5 @@ class Favourites(Base):
     user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
     house_id = Column(Integer, ForeignKey("houses.house_id"), nullable=False)
 
-    # Relations
     user = relationship("Users", back_populates="favourites")
     house = relationship("Houses", back_populates="favourited_by")

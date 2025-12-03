@@ -75,7 +75,9 @@ class _FavouritesState extends State<Favourites> {
       String? token = await tokenStorage.read(key: 'token');
       if (token == null) return;
 
-      final uri = Uri.parse("http://10.0.2.2:8000/remove_from_favourites/$houseId");
+      final uri = Uri.parse(
+        "http://10.0.2.2:8000/remove_from_favourites/$houseId",
+      );
       final response = await http.delete(
         uri,
         headers: {
@@ -88,7 +90,7 @@ class _FavouritesState extends State<Favourites> {
         setState(() {
           favourites.removeAt(index);
         });
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -115,13 +117,15 @@ class _FavouritesState extends State<Favourites> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           "My Favourites",
           style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF222222),
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1A1A1A),
+            letterSpacing: -0.5,
           ),
         ),
         centerTitle: true,
@@ -132,89 +136,78 @@ class _FavouritesState extends State<Favourites> {
       body: isLoading
           ? const Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF385C)),
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2E7FD8)),
               ),
             )
           : errorMessage != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        size: 60,
-                        color: Colors.grey[400],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        errorMessage!,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: fetchFavourites,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFF385C),
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text("Retry"),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 60, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    errorMessage!,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                   ),
-                )
-              : favourites.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.favorite_border,
-                            size: 80,
-                            color: Colors.grey[300],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            "No favourites yet",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "Start adding properties to your favourites",
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : RefreshIndicator(
-                      color: const Color(0xFFFF385C),
-                      onRefresh: fetchFavourites,
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: favourites.length,
-                        itemBuilder: (context, index) {
-                          final favourite = favourites[index];
-                          final house = favourite['house'];
-                          return _buildFavouriteCard(house, index);
-                        },
-                      ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: fetchFavourites,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2E7FD8),
+                      foregroundColor: Colors.white,
                     ),
+                    child: const Text("Retry"),
+                  ),
+                ],
+              ),
+            )
+          : favourites.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.favorite_border,
+                    size: 80,
+                    color: Colors.grey[300],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "No favourites yet",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Start adding properties to your favourites",
+                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                  ),
+                ],
+              ),
+            )
+          : RefreshIndicator(
+              color: const Color(0xFF2E7FD8),
+              onRefresh: fetchFavourites,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: favourites.length,
+                itemBuilder: (context, index) {
+                  final favourite = favourites[index];
+                  final house = favourite['house'];
+                  return _buildFavouriteCard(house, index);
+                },
+              ),
+            ),
       bottomNavigationBar: const Navbar(),
     );
   }
 
   Widget _buildFavouriteCard(Map<String, dynamic> house, int index) {
-    // Parse images
     List<String> images = [];
     final housePicture = house['house_picture'];
     if (housePicture != null) {
@@ -237,7 +230,6 @@ class _FavouritesState extends State<Favourites> {
     final int rooms = house['rooms'] ?? 0;
     final int houseId = house['id'];
 
-    // Owner information
     final owner = house['owner'] as Map<String, dynamic>?;
     final ownerName = owner?['full_name'] ?? 'Unknown Owner';
     final ownerProfilePicture = owner?['profile_picture'] ?? '';
@@ -245,19 +237,14 @@ class _FavouritesState extends State<Favourites> {
     return Card(
       elevation: 2,
       margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () async {
           final result = await Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => Housedetails(house: house),
-            ),
+            MaterialPageRoute(builder: (context) => Housedetails(house: house)),
           );
-          
-          // If the house was unfavorited in details page, refresh the list
+
           if (result == 'unfavorited') {
             fetchFavourites();
           }
@@ -266,11 +253,12 @@ class _FavouritesState extends State<Favourites> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image with favorite button
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(12),
+                  ),
                   child: imageUrl.isNotEmpty
                       ? Image.network(
                           imageUrl,
@@ -317,7 +305,7 @@ class _FavouritesState extends State<Favourites> {
                       ),
                       child: const Icon(
                         Icons.favorite,
-                        color: Color(0xFFFF385C),
+                        color: Color(0xFF2E7FD8),
                         size: 20,
                       ),
                     ),
@@ -327,7 +315,10 @@ class _FavouritesState extends State<Favourites> {
                   top: 12,
                   left: 12,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: status.toLowerCase() == 'rent'
                           ? Colors.blue
@@ -346,7 +337,6 @@ class _FavouritesState extends State<Favourites> {
                 ),
               ],
             ),
-            // Property details
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -386,11 +376,10 @@ class _FavouritesState extends State<Favourites> {
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFFFF385C),
+                      color: Color(0xFF2E7FD8),
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Owner Info
                   Row(
                     children: [
                       CircleAvatar(
@@ -400,7 +389,11 @@ class _FavouritesState extends State<Favourites> {
                             ? NetworkImage(ownerProfilePicture)
                             : null,
                         child: ownerProfilePicture.isEmpty
-                            ? const Icon(Icons.person, size: 14, color: Colors.grey)
+                            ? const Icon(
+                                Icons.person,
+                                size: 14,
+                                color: Colors.grey,
+                              )
                             : null,
                       ),
                       const SizedBox(width: 8),
