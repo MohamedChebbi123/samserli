@@ -15,16 +15,7 @@ class Users(Base):
 
     houses = relationship("Houses", back_populates="user")
 
-    # 🔵 Messages envoyés
-    sent_messages = relationship(
-        "Message",
-        foreign_keys="Message.sender_id",
-        back_populates="sender"
-    )
-
-    # 🔴 Messages reçus
-    received_messages = relationship(
-        "Message",
-        foreign_keys="Message.receiver_id",
-        back_populates="receiver"
-    )
+    
+    sent_messages = relationship("Message",foreign_keys="Message.sender_id",back_populates="sender")
+    received_messages = relationship("Message",foreign_keys="Message.receiver_id",back_populates="receiver")
+    favourites = relationship("Favourites",back_populates="user",cascade="all, delete-orphan")

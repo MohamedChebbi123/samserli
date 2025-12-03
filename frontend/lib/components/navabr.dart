@@ -6,6 +6,7 @@ import 'package:frontend/pages/houses/houseslist.dart';
 import 'package:frontend/pages/auth/login.dart';
 import 'package:frontend/pages/houses/your_properties.dart';
 import 'package:frontend/pages/messages/messages_inbox.dart';
+import 'package:frontend/pages/houses/favourites.dart';
 
 class Navbar extends StatelessWidget {
   const Navbar({super.key});
@@ -25,10 +26,12 @@ class Navbar extends StatelessWidget {
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
               _NavItem(
                 icon: Icons.search,
                 label: 'Explore',
@@ -36,6 +39,16 @@ class Navbar extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const HousesList()),
+                  );
+                },
+              ),
+              _NavItem(
+                icon: Icons.favorite_border,
+                label: 'Favourites',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Favourites()),
                   );
                 },
               ),
@@ -92,7 +105,8 @@ class Navbar extends StatelessWidget {
                   );
                 },
               ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -117,20 +131,20 @@ class _NavItem extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
-              size: 24,
+              size: 22,
               color: const Color(0xFF717171),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               label,
               style: const TextStyle(
-                fontSize: 10,
+                fontSize: 9,
                 fontWeight: FontWeight.w500,
                 color: Color(0xFF717171),
               ),

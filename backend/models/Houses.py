@@ -17,3 +17,4 @@ class Houses(Base):
 
     
     user = relationship("Users", back_populates="houses")
+    favourited_by = relationship("Favourites", back_populates="house", cascade="all, delete-orphan")

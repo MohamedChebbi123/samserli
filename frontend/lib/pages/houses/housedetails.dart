@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/pages/houses/message_user.dart';
 import 'dart:convert';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class Housedetails extends StatefulWidget {
   final Map<String, dynamic> house;
@@ -14,11 +17,90 @@ class Housedetails extends StatefulWidget {
 class _HousedetailsState extends State<Housedetails> {
   int _currentImageIndex = 0;
   final PageController _pageController = PageController();
+  final tokenStorage = const FlutterSecureStorage();
+  late bool isFavourite;
+  bool isLoadingFavourite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    isFavourite = widget.house['is_favourite'] ?? false;
+  }
 
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  Future<void> toggleFavourite() async {
+    setState(() {
+      isLoadingFavourite = true;
+    });
+
+    try {
+      String? token = await tokenStorage.read(key: 'token');
+      if (token == null) return;
+
+      final houseId = widget.house['id'];
+      final uri = isFavourite
+          ? Uri.parse("http://10.0.2.2:8000/remove_from_favourites/$houseId")
+          : Uri.parse("http://10.0.2.2:8000/add_to_favourites/$houseId");
+
+      final response = isFavourite
+          ? await http.delete(
+              uri,
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer $token",
+              },
+            )
+          : await http.post(
+              uri,
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer $token",
+              },
+            );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          isFavourite = !isFavourite;
+          isLoadingFavourite = false;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                isFavourite
+                    ? "Added to favourites"
+                    : "Removed from favourites",
+              ),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          isLoadingFavourite = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isLoadingFavourite = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error: $e"),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -71,8 +153,11 @@ class _HousedetailsState extends State<Housedetails> {
             onPressed: () {},
           ),
           IconButton(
-            icon: const Icon(Icons.favorite_border, color: Color(0xFF222222)),
-            onPressed: () {},
+            icon: Icon(
+              isFavourite ? Icons.favorite : Icons.favorite_border,
+              color: isFavourite ? const Color(0xFFFF385C) : const Color(0xFF222222),
+            ),
+            onPressed: isLoadingFavourite ? null : toggleFavourite,
           ),
         ],
       ),
@@ -295,6 +380,93 @@ class _HousedetailsState extends State<Housedetails> {
                       height: 1.6,
                     ),
                   ),
+                  const SizedBox(height: 32),
+                  const Divider(),
+                  const SizedBox(height: 24),
+                  
+                  // Location Map Section
+                  const Text(
+                    "Location",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF222222),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  // Coordinates Display
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on_outlined,
+                          size: 18,
+                          color: Color(0xFF717171),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Lat: ${widget.house['latitude']}, Long: ${widget.house['longitude']}',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF717171),
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Map Container
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: SizedBox(
+                      height: 200,
+                      child: GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                          target: LatLng(
+                            widget.house['latitude'] is String 
+                              ? double.tryParse(widget.house['latitude']) ?? 0.0
+                              : (widget.house['latitude'] ?? 0.0).toDouble(),
+                            widget.house['longitude'] is String
+                              ? double.tryParse(widget.house['longitude']) ?? 0.0
+                              : (widget.house['longitude'] ?? 0.0).toDouble(),
+                          ),
+                          zoom: 15,
+                        ),
+                        markers: {
+                          Marker(
+                            markerId: const MarkerId('property_location'),
+                            position: LatLng(
+                              widget.house['latitude'] is String 
+                                ? double.tryParse(widget.house['latitude']) ?? 0.0
+                                : (widget.house['latitude'] ?? 0.0).toDouble(),
+                              widget.house['longitude'] is String
+                                ? double.tryParse(widget.house['longitude']) ?? 0.0
+                                : (widget.house['longitude'] ?? 0.0).toDouble(),
+                            ),
+                            infoWindow: InfoWindow(
+                              title: name,
+                              snippet: status,
+                            ),
+                          ),
+                        },
+                        zoomControlsEnabled: true,
+                        myLocationButtonEnabled: false,
+                        mapToolbarEnabled: false,
+                        liteModeEnabled: false,
+                      ),
+                    ),
+                  ),
+                  
                   const SizedBox(height: 32),
                   const Divider(),
                   const SizedBox(height: 24),

@@ -471,16 +471,102 @@ class _HousesListState extends State<HousesList> {
   }
 }
 
-class HouseCard extends StatelessWidget {
+class HouseCard extends StatefulWidget {
   final dynamic house;
 
   const HouseCard({super.key, required this.house});
 
   @override
+  State<HouseCard> createState() => _HouseCardState();
+}
+
+class _HouseCardState extends State<HouseCard> {
+  final tokenStorage = const FlutterSecureStorage();
+  late bool isFavourite;
+  bool isLoadingFavourite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    isFavourite = widget.house['is_favourite'] ?? false;
+  }
+
+  Future<void> toggleFavourite() async {
+    setState(() {
+      isLoadingFavourite = true;
+    });
+
+    try {
+      String? token = await tokenStorage.read(key: 'token');
+      if (token == null) return;
+
+      final houseId = widget.house['id'];
+      final uri = isFavourite
+          ? Uri.parse("http://10.0.2.2:8000/remove_from_favourites/$houseId")
+          : Uri.parse("http://10.0.2.2:8000/add_to_favourites/$houseId");
+
+      final response = isFavourite
+          ? await http.delete(
+              uri,
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer $token",
+              },
+            )
+          : await http.post(
+              uri,
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer $token",
+              },
+            );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          isFavourite = !isFavourite;
+          isLoadingFavourite = false;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                isFavourite
+                    ? "Added to favourites"
+                    : "Removed from favourites",
+              ),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          isLoadingFavourite = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isLoadingFavourite = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error: $e"),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Parse images - handle both JSON string and list
     List<String> images = [];
-    final housePicture = house['house_picture'];
+    final housePicture = widget.house['house_picture'];
     if (housePicture != null) {
       if (housePicture is String) {
         // If it's a JSON string, decode it
@@ -498,10 +584,10 @@ class HouseCard extends StatelessWidget {
     }
     final firstImage = images.isNotEmpty ? images[0] : null;
 
-    final status = (house['status'] ?? 'N/A').toString().toLowerCase();
+    final status = (widget.house['status'] ?? 'N/A').toString().toLowerCase();
     
     // Owner information
-    final owner = house['owner'] as Map<String, dynamic>?;
+    final owner = widget.house['owner'] as Map<String, dynamic>?;
     final ownerName = owner?['full_name'] ?? 'Unknown Owner';
     final ownerProfilePicture = owner?['profile_picture'] ?? '';
 
@@ -510,7 +596,7 @@ class HouseCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => Housedetails(house: house),
+            builder: (context) => Housedetails(house: widget.house),
           ),
         );
       },
@@ -544,16 +630,32 @@ class HouseCard extends StatelessWidget {
                 Positioned(
                   top: 12,
                   right: 12,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.favorite_border,
-                      color: Color(0xFF222222),
-                      size: 20,
+                  child: GestureDetector(
+                    onTap: isLoadingFavourite ? null : toggleFavourite,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        shape: BoxShape.circle,
+                      ),
+                      child: isLoadingFavourite
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color(0xFFFF385C),
+                                ),
+                              ),
+                            )
+                          : Icon(
+                              isFavourite ? Icons.favorite : Icons.favorite_border,
+                              color: isFavourite
+                                  ? const Color(0xFFFF385C)
+                                  : const Color(0xFF222222),
+                              size: 20,
+                            ),
                     ),
                   ),
                 ),
@@ -572,7 +674,7 @@ class HouseCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        house['name'] ?? 'Unnamed Property',
+                        widget.house['name'] ?? 'Unnamed Property',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -583,7 +685,7 @@ class HouseCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        house['description'] ?? 'No description',
+                        widget.house['description'] ?? 'No description',
                         style: const TextStyle(
                           fontSize: 14,
                           color: Color(0xFF717171),
@@ -595,7 +697,7 @@ class HouseCard extends StatelessWidget {
                       Row(
                         children: [
                           Text(
-                            '\$${house['price']?.toStringAsFixed(0) ?? '0'}',
+                            '\$${widget.house['price']?.toStringAsFixed(0) ?? '0'}',
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -623,7 +725,7 @@ class HouseCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '${house['rooms'] ?? 0} ${(house['rooms'] ?? 0) == 1 ? 'Room' : 'Rooms'}',
+                            '${widget.house['rooms'] ?? 0} ${(widget.house['rooms'] ?? 0) == 1 ? 'Room' : 'Rooms'}',
                             style: const TextStyle(
                               fontSize: 13,
                               color: Color(0xFF717171),

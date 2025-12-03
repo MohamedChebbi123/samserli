@@ -342,3 +342,63 @@ def get_all_conversations(
     conversations.sort(key=lambda x: x['last_message_time'] or '', reverse=True)
     
     return conversations
+
+def edit_profile(
+    first_name: str = Form(None),
+    last_name: str = Form(None),
+    phone_number: str = Form(None),
+    profile_picture: UploadFile = File(None),
+    authorization: str | None = Header(None),
+    db: session = Depends(connect_databse)
+):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization header missing")
+
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+
+    token = authorization.split(" ")[1]
+    payload = verify_access_token(token)
+
+    if not payload or "sub" not in payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    user_id = payload["sub"]
+    
+    # Find the user
+    found_user = db.query(Users).filter(Users.user_id == user_id).first()
+    
+    if not found_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Update fields if provided
+    if first_name:
+        if len(first_name.strip()) < 6:
+            raise HTTPException(status_code=400, detail="First name should be more than 6 characters")
+        found_user.first_name = first_name
+    
+    if last_name:
+        if len(last_name.strip()) < 6:
+            raise HTTPException(status_code=400, detail="Last name should be more than 6 characters")
+        found_user.last_name = last_name
+    
+    if phone_number:
+        if len(phone_number) < 8:
+            raise HTTPException(status_code=400, detail="Phone number should be at least 8 characters")
+        found_user.phone_number = phone_number
+    
+    if profile_picture and profile_picture.filename:
+        profile_image_url = upload_user_profile_image(profile_picture)
+        found_user.profile_picture = profile_image_url
+    
+    db.commit()
+    db.refresh(found_user)
+    
+    return {
+        "msg": "Profile updated successfully",
+        "first_name": found_user.first_name,
+        "last_name": found_user.last_name,
+        "email": found_user.email,
+        "profile_picture": found_user.profile_picture,
+        "phone_number": found_user.phone_number
+    }

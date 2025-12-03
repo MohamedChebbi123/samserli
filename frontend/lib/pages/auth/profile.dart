@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../components/navabr.dart';
+import 'edit_profile.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -211,8 +212,20 @@ class _ProfileState extends State<Profile> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {
-                  // Add edit profile functionality here
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditProfile(userData: userData!),
+                    ),
+                  );
+                  
+                  // If profile was updated, refresh the profile data
+                  if (result != null) {
+                    setState(() {
+                      userData = result;
+                    });
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFF385C),

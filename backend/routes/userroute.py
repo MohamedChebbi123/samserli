@@ -1,4 +1,4 @@
-from controller.user_controller import register,login,view_profile,send_message,get_conversation,update_message,delete_message,get_all_conversations
+from controller.user_controller import register,login,view_profile,send_message,get_conversation,update_message,delete_message,get_all_conversations,edit_profile
 from schemas.Messageschema import Messageschema
 from fastapi import APIRouter, Depends, File, Header, UploadFile,Form
 from sqlalchemy.orm import session
@@ -77,3 +77,15 @@ def get_conversations(
     db: session = Depends(connect_databse)
 ):
     return get_all_conversations(authorization, db)
+
+
+@router.put("/edit_profile")
+def update_profile(
+    first_name: str = Form(None),
+    last_name: str = Form(None),
+    phone_number: str = Form(None),
+    profile_picture: UploadFile = File(None),
+    authorization: str | None = Header(None),
+    db: session = Depends(connect_databse)
+):
+    return edit_profile(first_name, last_name, phone_number, profile_picture, authorization, db)

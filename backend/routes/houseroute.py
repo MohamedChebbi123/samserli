@@ -1,4 +1,4 @@
-from controller.housecontroller import add_houses,fetch_houses,fetch_user_properties,delete_user_property,modify_user_property
+from controller.housecontroller import add_houses,fetch_houses,fetch_user_properties,delete_user_property,modify_user_property,add_to_favourites,remove_from_favourites,get_user_favourites,check_if_favourite
 from fastapi import APIRouter
 from models.Houses import Houses
 from fastapi import File, Form, Header, UploadFile,HTTPException,status,Depends
@@ -59,3 +59,30 @@ def modify_property(house_id: int = Form(...),
                     db: session = Depends(connect_databse),
                     authorization: str | None = Header(None)):
     return modify_user_property(house_id, latitude, longitude, rooms, status, price, name, description, house_pictures, db, authorization)
+
+
+@router.post("/add_to_favourites/{house_id}")
+def add_house_to_favourites(house_id: int,
+                             db: session = Depends(connect_databse),
+                             authorization: str | None = Header(None)):
+    return add_to_favourites(house_id, db, authorization)
+
+
+@router.delete("/remove_from_favourites/{house_id}")
+def remove_house_from_favourites(house_id: int,
+                                  db: session = Depends(connect_databse),
+                                  authorization: str | None = Header(None)):
+    return remove_from_favourites(house_id, db, authorization)
+
+
+@router.get("/get_favourites")
+def get_favourites(db: session = Depends(connect_databse),
+                   authorization: str | None = Header(None)):
+    return get_user_favourites(db, authorization)
+
+
+@router.get("/check_favourite/{house_id}")
+def check_favourite(house_id: int,
+                    db: session = Depends(connect_databse),
+                    authorization: str | None = Header(None)):
+    return check_if_favourite(house_id, db, authorization)
