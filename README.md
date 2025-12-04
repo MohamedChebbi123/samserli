@@ -15,6 +15,42 @@ A modern, full-stack real estate platform that connects property buyers, sellers
 
 ---
 
+## 📱 Screenshots
+
+### User Profile & Management
+<p align="center">
+  <img src="app%20screenshots/user%20profile.png" alt="User Profile" width="250"/>
+  <img src="app%20screenshots/user%20properties.png" alt="User Properties" width="250"/>
+  <img src="app%20screenshots/block%20user.png" alt="Block User" width="250"/>
+</p>
+
+### Property Browsing & Details
+<p align="center">
+  <img src="app%20screenshots/explore%20poster%20properties.png" alt="Explore Properties" width="250"/>
+  <img src="app%20screenshots/filter.png" alt="Filter Properties" width="250"/>
+  <img src="app%20screenshots/house%20details%20part%201.png" alt="House Details 1" width="250"/>
+</p>
+
+<p align="center">
+  <img src="app%20screenshots/house%20details%20part%202.png" alt="House Details 2" width="250"/>
+  <img src="app%20screenshots/houses%20with%20map%20palcemnt.png" alt="Map View" width="250"/>
+  <img src="app%20screenshots/favourites.png" alt="Favorites" width="250"/>
+</p>
+
+### Property Management
+<p align="center">
+  <img src="app%20screenshots/house%20adding%20form.png" alt="Add Property" width="250"/>
+</p>
+
+### Messaging System
+<p align="center">
+  <img src="app%20screenshots/messages%20inbox.png" alt="Messages Inbox" width="250"/>
+  <img src="app%20screenshots/messages.png" alt="Messages" width="250"/>
+  <img src="app%20screenshots/messaging.png" alt="Messaging" width="250"/>
+</p>
+
+---
+
 ## 🎯 About the Project
 
 This real estate application is designed to simplify the property search and listing process. Whether you're looking to buy, sell, or rent a property, our platform provides all the tools you need in one place. With powerful search capabilities, real-time messaging, and secure user authentication, users can confidently navigate the real estate market.
@@ -23,7 +59,7 @@ This real estate application is designed to simplify the property search and lis
 
 - **User-Centric Design**: Intuitive interface designed for both tech-savvy users and beginners
 - **Cross-Platform**: Works seamlessly on iOS, Android, and Web
-- **Real-Time Communication**: Built-in messaging system to connect buyers and sellers instantly
+- **Communication**: Built-in messaging system to connect buyers and sellers instantly
 - **Secure & Reliable**: JWT authentication, password encryption, and secure data storage
 - **Scalable Architecture**: Built with modern technologies that can grow with your needs
 
@@ -75,7 +111,8 @@ This real estate application is designed to simplify the property search and lis
 2. **Create virtual environment**
    ```bash
    python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   source venv/bin/activate 
+   On Windows: venv/Scripts/activate
    ```
 
 3. **Install dependencies**
@@ -232,11 +269,7 @@ This project is licensed under the MIT License.
 
 ---
 
-## Contact
 
-For questions or support, please contact the development team.
-
----
 
 ## Acknowledgments
 
@@ -406,6 +439,3 @@ If you find this project useful, please consider giving it a star on GitHub! You
 ### Level 4: Code Diagram
 ![Code Diagram](samserli%20images/lvl4%20c4%20model.png)
 
----
-
-## 🚀 Getting Started
