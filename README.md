@@ -33,7 +33,11 @@ A modern, full-stack real estate platform that connects property buyers, sellers
 
 <p align="center">
   <img src="app%20screenshots/house%20details%20part%202.png" alt="House Details 2" width="250"/>
+  <img src="app%20screenshots/house%20detail%20with%20edit%20and%20delet.png" alt="House Details - Edit & Delete" width="250"/>
   <img src="app%20screenshots/houses%20with%20map%20palcemnt.png" alt="Map View" width="250"/>
+</p>
+
+<p align="center">
   <img src="app%20screenshots/favourites.png" alt="Favorites" width="250"/>
 </p>
 
