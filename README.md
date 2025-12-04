@@ -306,7 +306,7 @@ The API is fully documented with interactive Swagger UI. Once the backend is run
   - View all your saved properties in one place
   - Never lose track of properties you like
 
-### 💬 Real-Time Messaging System
+### 💬 Messaging System
 
 - **Direct Communication**: Contact property owners instantly
 - **Conversation Management**: 
@@ -376,7 +376,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 👥 Team & Contact
 
-For questions, suggestions, or collaboration opportunities, please contact the development team.
+For questions, suggestions, or collaboration opportunities, please contact the development team (mohamed.chebbi.official@gmail.com).
+
 
 **Repository**: [samserli](https://github.com/MohamedChebbi123/samserli)
 
@@ -398,33 +399,9 @@ If you find this project useful, please consider giving it a star on GitHub! You
 
 ---
 
-**Built with ❤️ using Flutter and FastAPI**bSockets
-- [ ] Property comparison feature
-- [ ] Virtual property tours with 360° images
-- [ ] Payment gateway integration
-- [ ] Review and rating system for properties
-- [ ] Admin dashboard for platform management
-- [ ] Analytics and insights for property owners
-- [ ] Multi-language support
-- [ ] Dark mode theme
-- [ ] Property scheduling and viewing appointments
-- [ ] Mortgage calculator
-- [ ] Neighborhood information integration
 
----
 
-## 🤝 Contributing* - Powerful ORM for database operations
-- **JWT (JSON Web Tokens)** - Secure authentication
-- **Bcrypt** - Password hashing and encryption
 
-### Database & Storage
-- **PostgreSQL** - Robust relational database
-- **Cloudinary** - Cloud-based image storage and CDN
-
-### Services
-- **SMTP** - Email delivery for notifications and password resets
-
----
 
 ## 📐 Architecture - C4 Model
 
